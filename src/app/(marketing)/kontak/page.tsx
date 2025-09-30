@@ -273,7 +273,7 @@ export default function KontakPage() {
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }} className="space-y-8">
               <div className="relative h-96 bg-zinc-100 rounded-2xl overflow-hidden shadow-lg">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126646.22537966!2d110.79004!3d-6.8073!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e70c4b8b6b6b6b7%3A0x1234567890abcdef!2sKudus%2C%20Central%20Java!5e0!3m2!1sen!2sid!4v1234567890"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3960.8149779232567!2d110.6104739!3d-6.9127130999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e70ed003ac95cb5%3A0xb00560c6d36c5b6a!2sPT%20Tunas%20Esta%20Indonesia!5e0!3m2!1sen!2sid!4v1759213346542!5m2!1sen!2sid"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -283,7 +283,7 @@ export default function KontakPage() {
                   className="grayscale hover:grayscale-0 transition-all duration-300"
                 />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
-                  <span className="text-sm font-semibold text-zinc-800">📍 Kudus, Central Java</span>
+                  <span className="text-sm font-semibold text-zinc-800">📍 Demak Jawa Tengah</span>
                 </div>
               </div>
 
