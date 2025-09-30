@@ -3,125 +3,75 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-} from "@/components/ui/navigation-menu";
-import { Menu, Phone, Mail, MapPin, ChevronDown } from "lucide-react";
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { Menu, Phone, ChevronDown } from "lucide-react";
+
+type NavItem = { title: string; href: string; description?: string };
 
 type SiteHeaderProps = {
   logoUrl?: string;
   siteTitle: string;
+  /** Optional: kirim dari Sanity (qNavigation.main) */
+  navItems?: NavItem[];
 };
 
-export function SiteHeader({ logoUrl, siteTitle }: SiteHeaderProps) {
+export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProps) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Handle scroll effect
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const NAV = [
-    {
-      label: "Tentang",
-      href: "/tentang",
-      description: "Profil perusahaan & sejarah TUNAS ESTA INDONESIA.",
-    },
-    {
-      label: "Produk",
-      href: "/produk",
-      description: "Grade sarang walet berkualitas ekspor.",
-    },
-    {
-      label: "Fasilitas",
-      href: "/fasilitas",
-      description: "Lihat pabrik & kapasitas produksi.",
-    },
-    {
-      label: "Sertifikasi",
-      href: "/sertifikasi",
-      description: "HACCP, Halal, BPOM, ISO 22000.",
-    },
-    {
-      label: "Berita",
-      href: "/berita",
-      description: "Informasi & update terbaru.",
-    },
-    {
-      label: "Karier",
-      href: "/karier",
-      description: "Lowongan pekerjaan & kesempatan bergabung.",
-    },
-    {
-      label: "Galeri",
-      href: "/galeri",
-      description: "Dokumentasi kegiatan & produk.",
-    },
-    {
-      label: "Kontak",
-      href: "/kontak",
-      description: "Hubungi kami untuk informasi lebih lanjut.",
-    },
+  // Fallback NAV kalau CMS kosong — TANPA "Tentang"
+  const FALLBACK: NavItem[] = [
+    { title: "Produk", href: "/produk", description: "Grade sarang walet berkualitas ekspor." },
+    { title: "Fasilitas", href: "/fasilitas", description: "Lihat pabrik & kapasitas produksi." },
+    { title: "Sertifikasi", href: "/sertifikasi", description: "HACCP, Halal, BPOM, ISO 22000." },
+    { title: "Berita", href: "/berita", description: "Informasi & update terbaru." },
+    { title: "Karier", href: "/karier", description: "Lowongan pekerjaan & kesempatan bergabung." },
+    { title: "Galeri", href: "/galeri", description: "Dokumentasi kegiatan & produk." },
+    { title: "Kontak", href: "/kontak", description: "Hubungi kami untuk informasi lebih lanjut." },
   ];
+
+  // Pakai data dari CMS kalau ada, dan filter jika ada "Tentang" di sana
+  const NAV = (navItems.length ? navItems : FALLBACK).filter(
+    (item) => item.title?.toLowerCase() !== "tentang"
+  );
 
   return (
     <>
-      {/* Top contact bar */}
-      <div className="hidden lg:block bg-green-600 text-white text-xs py-2">
-        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <Phone className="w-3 h-3" />
-              <span>+62 21 1234 5678</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Mail className="w-3 h-3" />
-              <span>info@tunasesta.com</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-3 h-3" />
-              <span>Jakarta, Indonesia</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span>✨ Kualitas Premium Sejak 1985</span>
-          </div>
-        </div>
-      </div>
-
       {/* Main header */}
-      <header 
+      <header
         className={`sticky top-0 z-50 w-full transition-all duration-300 border-b ${
-          scrolled 
-            ? "bg-white/95 backdrop-blur-md shadow-lg border-gray-200" 
-            : "bg-white/90 backdrop-blur-sm border-gray-100"
+          scrolled ? "bg-white/95 backdrop-blur-md shadow-lg border-gray-200" : "bg-white/90 backdrop-blur-sm border-gray-100"
         }`}
-        style={{ minHeight: '80px' }}
+        style={{ minHeight: "80px" }}
       >
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           {/* Logo */}
-          <Link 
-            href="/" 
+          <Link
+            href="/"
+            aria-label="Kembali ke beranda"
             className="flex items-center gap-3 font-semibold group transition-all duration-300 hover:scale-105"
           >
             {logoUrl ? (
               <div className="relative">
-                <Image 
-                  src={logoUrl} 
-                  alt={siteTitle} 
-                  width={48} 
-                  height={48} 
-                  className="rounded-xl shadow-md group-hover:shadow-lg transition-all duration-300" 
+                <Image
+                  src={logoUrl}
+                  alt={siteTitle}
+                  width={48}
+                  height={48}
+                  className="rounded-xl shadow-md group-hover:shadow-lg transition-all duration-300"
                 />
               </div>
             ) : (
@@ -130,28 +80,31 @@ export function SiteHeader({ logoUrl, siteTitle }: SiteHeaderProps) {
               </div>
             )}
             <div className="hidden md:block">
-              <div className="text-lg lg:text-xl font-bold text-green-700">
-                {siteTitle}
-              </div>
-              <div className="text-xs text-gray-500 -mt-1">Premium Bird's Nest</div>
+              <div className="text-lg lg:text-xl font-bold text-green-700">{siteTitle}</div>
+              <div className="text-xs text-gray-500 -mt-1">Premium Bird&apos;s Nest</div>
             </div>
           </Link>
 
           {/* Desktop navigation */}
-          <nav className="hidden lg:block">
+          <nav aria-label="Navigasi utama" className="hidden lg:block">
             <div className="flex items-center gap-1">
               {NAV.map((item) => (
                 <div key={item.href} className="relative group">
-                  <button className="px-4 py-3 rounded-lg transition-all duration-300 hover:bg-green-50 hover:text-green-700 font-medium text-sm flex items-center gap-1">
-                    {item.label}
+                  <button
+                    type="button"
+                    aria-haspopup="menu"
+                    aria-expanded="false"
+                    className="px-4 py-3 rounded-lg transition-all duration-300 hover:bg-green-50 hover:text-green-700 font-medium text-sm flex items-center gap-1"
+                  >
+                    {item.title}
                     <ChevronDown className="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" />
                   </button>
-                  
-                  {/* Dropdown */}
+
+                  {/* Dropdown (hover) */}
                   <div className="absolute top-full left-0 w-64 bg-white rounded-xl shadow-xl border border-gray-100 p-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
                     <div className="p-3 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white mb-3">
-                      <h3 className="font-semibold mb-1">{item.label}</h3>
-                      <p className="text-xs text-green-100">{item.description}</p>
+                      <h3 className="font-semibold mb-1">{item.title}</h3>
+                      {item.description && <p className="text-xs text-green-100">{item.description}</p>}
                     </div>
                     <Link
                       href={item.href}
@@ -178,16 +131,22 @@ export function SiteHeader({ logoUrl, siteTitle }: SiteHeaderProps) {
           {/* Mobile menu */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild className="lg:hidden">
-              <button 
-                aria-label="Menu" 
+              <button
+                aria-label="Buka menu"
                 className="p-2 rounded-lg hover:bg-green-50 transition-all duration-300"
               >
                 <Menu className="w-6 h-6 text-gray-700" />
               </button>
             </SheetTrigger>
-            
+
             <SheetContent side="right" className="w-80 bg-white">
-              <div className="mt-8">
+              {/* Aksesibilitas: title/description untuk dialog */}
+              <SheetHeader>
+                <SheetTitle className="sr-only">Menu utama</SheetTitle>
+                <SheetDescription className="sr-only">Navigasi situs dan tautan cepat</SheetDescription>
+              </SheetHeader>
+
+              <div className="mt-6">
                 {/* Mobile logo */}
                 <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-100">
                   <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center text-white font-bold">
@@ -199,7 +158,7 @@ export function SiteHeader({ logoUrl, siteTitle }: SiteHeaderProps) {
                   </div>
                 </div>
 
-                <nav className="space-y-2">
+                <nav aria-label="Navigasi mobile" className="space-y-2">
                   {NAV.map((item) => (
                     <Link
                       key={item.href}
@@ -207,12 +166,8 @@ export function SiteHeader({ logoUrl, siteTitle }: SiteHeaderProps) {
                       className="flex flex-col gap-1 rounded-lg px-4 py-3 hover:bg-green-50 transition-all duration-300"
                       onClick={() => setOpen(false)}
                     >
-                      <div className="font-medium text-gray-900 hover:text-green-700">
-                        {item.label}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {item.description}
-                      </div>
+                      <span className="font-medium text-gray-900 hover:text-green-700">{item.title}</span>
+                      {item.description && <span className="text-xs text-gray-500">{item.description}</span>}
                     </Link>
                   ))}
                 </nav>

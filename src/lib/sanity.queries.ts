@@ -2,13 +2,15 @@
 import { groq } from "next-sanity";
 
 // Homepage
+
 export const qHero = groq`*[_type=="hero"][0]{
   headline,
   subheadline,
   ctaText,
   ctaHref,
-  "bgUrl": background.asset->url,
-  "videoUrl": video.asset->url
+  // slideshow: pakai backgrounds[] kalau ada; kalau tidak, fallback ke background tunggal
+  "bgUrls": coalesce(backgrounds[].asset->url, select(defined(background)=>[background.asset->url], [])),
+  "bgUrl": background.asset->url // optional: untuk fallback di komponen lama
 }`;
 
 // Settings
@@ -25,26 +27,48 @@ export const qPageBySlug = groq`*[_type=="page" && slug.current==$slug][0]{
   body,
   "slug": slug.current
 }`;
-
-// Products
-export const qAllProduk = groq`*[_type=="produk"] | order(grade asc){
+// — PRODUCTS —
+export const qAllProduk = groq`*[_type=="produk"]{
   _id,
   nama,
-  deskripsi,
-  grade,
+  "deskripsi": coalesce(string(deskripsi), pt::text(deskripsi)),
+  "grade": select(
+    defined(grade.value) => grade.value,
+    defined(grade.label) => grade.label,
+    string(grade)
+  ),
   "fotoUrl": foto.asset->url,
-  spesifikasi,
+  "spesifikasi": spesifikasi[]{
+    "t": select(
+      defined(value) => value,
+      defined(label) => label,
+      _type == "reference" => @->title,
+      string(@)
+    )
+  }["t"],
   "slug": slug.current
-}`;
+} | order(grade asc)`;
 
 export const qProdukBySlug = groq`*[_type=="produk" && slug.current==$slug][0]{
   nama,
-  deskripsi,
-  grade,
+  "deskripsi": coalesce(string(deskripsi), pt::text(deskripsi)),
+  "grade": select(
+    defined(grade.value) => grade.value,
+    defined(grade.label) => grade.label,
+    string(grade)
+  ),
   "fotoUrl": foto.asset->url,
-  spesifikasi,
+  "spesifikasi": spesifikasi[]{
+    "t": select(
+      defined(value) => value,
+      defined(label) => label,
+      _type == "reference" => @->title,
+      string(@)
+    )
+  }["t"],
   "slug": slug.current
 }`;
+
 
 // Facilities
 export const qAllFasilitas = groq`*[_type=="fasilitas"] | order(_createdAt desc){
@@ -158,3 +182,4 @@ export const qNavigation = groq`*[_type=="navigation"][0]{
     href
   }
 }`;
+
