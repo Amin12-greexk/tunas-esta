@@ -72,13 +72,6 @@ export function CTA() {
     }
   ];
 
-  const stats = [
-    { value: "500+", label: "Mitra Global" },
-    { value: "15+", label: "Negara Ekspor" },
-    { value: "25+", label: "Tahun Pengalaman" },
-    { value: "98%", label: "Kepuasan Klien" }
-  ];
-
   return (
     <section
       ref={sectionRef}
@@ -119,24 +112,6 @@ export function CTA() {
             sarang walet premium dengan dukungan penuh dari tim profesional kami
           </p>
         </div>
-
-        {/* Stats Section */}
-        <div 
-          className={`grid md:grid-cols-4 gap-8 mb-20 transition-all duration-1000 delay-300 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-        >
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="text-center bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300"
-            >
-              <div className="text-4xl font-bold text-white mb-2">{stat.value}</div>
-              <div className="text-sm text-gray-300">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-
         {/* CTA Cards */}
         <div 
           className={`grid lg:grid-cols-3 gap-8 mb-20 transition-all duration-1000 delay-500 ${

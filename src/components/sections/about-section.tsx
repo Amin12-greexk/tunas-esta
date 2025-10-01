@@ -176,13 +176,12 @@ export function AboutSection() {
             Tentang TUNAS ESTA INDONESIA
           </div>
           <h2 className="text-5xl md:text-6xl font-bold text-gray-900 mb-8 leading-tight">
-            Pelopor Industri
+            Produsen
             <span className="block bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
               Sarang Walet Indonesia
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
-            Lebih dari dua dekade membangun kepercayaan global melalui kualitas premium, 
             inovasi berkelanjutan, dan komitmen terhadap keunggulan dalam setiap produk yang kami hasilkan
           </p>
         </div>

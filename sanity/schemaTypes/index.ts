@@ -11,6 +11,7 @@ import galeriAlbum from "../schemas/galeriAlbum";
 import galeriFoto from "../schemas/galeriFoto";
 import page from "../schemas/page";
 import inquiry from "../schemas/inquiry";
+import tentang from "../schemas/tentang"; // <-- 1. TAMBAHKAN IMPORT INI
 
 export const schemaTypes = [
   settings,
@@ -25,4 +26,5 @@ export const schemaTypes = [
   galeriFoto,
   page,
   inquiry,
+  tentang, // <-- 2. TAMBAHKAN SKEMA DI SINI
 ];

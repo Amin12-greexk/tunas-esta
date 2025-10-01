@@ -8,18 +8,23 @@ interface ProductCardProps {
   deskripsi?: string;
   fotoUrl?: string;
   spesifikasi?: any;
+  onClick?: () => void;
 }
 
 export function ProductCard({ 
   nama, 
   deskripsi, 
   fotoUrl, 
-  spesifikasi 
+  spesifikasi,
+  onClick 
 }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 hover:-translate-y-2">
+    <div 
+      className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 hover:-translate-y-2 cursor-pointer"
+      onClick={onClick}
+    >
       {/* Product Image */}
       <div className="relative h-48 overflow-hidden">
         {fotoUrl && !imageError ? (
@@ -48,8 +53,12 @@ export function ProductCard({
           </div>
         </div>
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        {/* Click Indicator */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <div className="bg-white/90 backdrop-blur-sm rounded-full p-3 transform scale-0 group-hover:scale-100 transition-transform duration-300">
+            <ArrowRight className="w-6 h-6 text-green-600" />
+          </div>
+        </div>
       </div>
 
       {/* Product Content */}
@@ -91,11 +100,20 @@ export function ProductCard({
 
         {/* CTA Buttons */}
         <div className="flex gap-3">
-          <button className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 flex items-center justify-center gap-2">
+          <button 
+            className="flex-1 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 flex items-center justify-center gap-2"
+            onClick={(e) => {
+              e.stopPropagation();
+              onClick?.();
+            }}
+          >
             <span>Lihat Detail</span>
             <ArrowRight className="w-4 h-4" />
           </button>
-          <button className="px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-all duration-300">
+          <button 
+            className="px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-xl transition-all duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Info className="w-4 h-4" />
           </button>
         </div>

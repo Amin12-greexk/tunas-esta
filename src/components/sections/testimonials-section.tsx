@@ -110,27 +110,6 @@ export function TestimonialsSection() {
     }
   ];
 
-  const stats = [
-    {
-      icon: Users,
-      value: "500+",
-      label: "Mitra Global",
-      description: "Distributor dan importir terpercaya"
-    },
-    {
-      icon: Globe,
-      value: "15+",
-      label: "Negara Tujuan",
-      description: "Jangkauan ekspor internasional"
-    },
-    {
-      icon: TrendingUp,
-      value: "98%",
-      label: "Tingkat Retensi",
-      description: "Klien yang melanjutkan kerjasama"
-    }
-  ];
-
   const nextTestimonial = () => {
     setCurrentTestimonial((prev) => (prev + 1) % testimonials.length);
     setIsAutoPlaying(false);
@@ -175,27 +154,6 @@ export function TestimonialsSection() {
             Mendengar langsung dari mitra bisnis kami di berbagai negara tentang kualitas 
             produk dan layanan yang telah membangun kepercayaan jangka panjang
           </p>
-        </div>
-
-        {/* Stats */}
-        <div 
-          className={`grid md:grid-cols-3 gap-8 mb-20 transition-all duration-1000 delay-300 ${
-            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-          }`}
-        >
-          {stats.map((stat, index) => (
-            <div
-              key={index}
-              className="text-center bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-            >
-              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <stat.icon className="w-8 h-8 text-white" />
-              </div>
-              <div className="text-4xl font-bold text-gray-900 mb-2">{stat.value}</div>
-              <div className="text-lg font-semibold text-gray-700 mb-2">{stat.label}</div>
-              <div className="text-sm text-gray-600">{stat.description}</div>
-            </div>
-          ))}
         </div>
 
         {/* Main Testimonial */}
