@@ -1,3 +1,4 @@
+// schemas/produk.ts
 import { defineType, defineField } from "sanity";
 
 export default defineType({
@@ -17,26 +18,31 @@ export default defineType({
       type: "text",
       title: "Deskripsi",
     }),
+
+    // ✅ Free-text (tanpa list)
     defineField({
-      name: "grade",
+      name: "tipe",
       type: "string",
-      title: "Grade",
-      options: {
-        list: ["A", "B", "C", "Premium", "Export"],
-      },
+      title: "Tipe Produk",
+      description: "Contoh: Oval, Sudut, Patahan, Pure Nest, Mangkok, dll.",
     }),
+
+    // ✅ Free-text (tanpa list)
+    defineField({
+      name: "ukuran",
+      type: "string",
+      title: "Ukuran",
+      description: "Contoh: 3.8 cm, Jumbo, Super, Premium, dst.",
+    }),
+
     defineField({
       name: "foto",
       type: "image",
       title: "Foto Produk",
       options: { hotspot: true },
     }),
-    defineField({
-      name: "spesifikasi",
-      type: "array",
-      title: "Spesifikasi QC",
-      of: [{ type: "string" }],
-    }),
   ],
-  preview: { select: { title: "nama", subtitle: "grade", media: "foto" } },
+  preview: {
+    select: { title: "nama", subtitle: "tipe", media: "foto" },
+  },
 });

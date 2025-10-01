@@ -2,7 +2,6 @@
 import { groq } from "next-sanity";
 
 // Homepage
-
 export const qHero = groq`*[_type=="hero"][0]{
   headline,
   subheadline,
@@ -27,49 +26,37 @@ export const qPageBySlug = groq`*[_type=="page" && slug.current==$slug][0]{
   body,
   "slug": slug.current
 }`;
-// — PRODUCTS —
+
+// — PRODUCTS — (updated)
 export const qAllProduk = groq`*[_type=="produk"]{
   _id,
   nama,
   "deskripsi": coalesce(string(deskripsi), pt::text(deskripsi)),
-  "grade": select(
-    defined(grade.value) => grade.value,
-    defined(grade.label) => grade.label,
-    string(grade)
-  ),
+  "tipe": coalesce(tipe, ""),
+  "ukuran": coalesce(ukuran, ""),
   "fotoUrl": foto.asset->url,
-  "spesifikasi": spesifikasi[]{
-    "t": select(
-      defined(value) => value,
-      defined(label) => label,
-      _type == "reference" => @->title,
-      string(@)
-    )
-  }["t"],
   "slug": slug.current
-} | order(grade asc)`;
+} | order(tipe asc, ukuran asc)`;
 
 export const qProdukBySlug = groq`*[_type=="produk" && slug.current==$slug][0]{
   nama,
   "deskripsi": coalesce(string(deskripsi), pt::text(deskripsi)),
-  "grade": select(
-    defined(grade.value) => grade.value,
-    defined(grade.label) => grade.label,
-    string(grade)
-  ),
+  "tipe": coalesce(tipe, ""),
+  "ukuran": coalesce(ukuran, ""),
   "fotoUrl": foto.asset->url,
-  "spesifikasi": spesifikasi[]{
-    "t": select(
-      defined(value) => value,
-      defined(label) => label,
-      _type == "reference" => @->title,
-      string(@)
-    )
-  }["t"],
   "slug": slug.current
 }`;
 
-
+// Opsional: filter by tipe (tetap bisa, karena tipe sekarang string biasa)
+export const qProdukByTipe = groq`*[_type=="produk" && tipe==$tipe]{
+  _id,
+  nama,
+  "deskripsi": coalesce(string(deskripsi), pt::text(deskripsi)),
+  "tipe": coalesce(tipe, ""),
+  "ukuran": coalesce(ukuran, ""),
+  "fotoUrl": foto.asset->url,
+  "slug": slug.current
+} | order(ukuran asc)`;
 // Facilities
 export const qAllFasilitas = groq`*[_type=="fasilitas"] | order(_createdAt desc){
   _id,
@@ -183,3 +170,10 @@ export const qNavigation = groq`*[_type=="navigation"][0]{
   }
 }`;
 
+export const qTentang = groq`*[_type=="tentang"][0]{
+  title,
+  "heroUrl": heroImage.asset->url,
+  overview,
+  milestones,
+  values
+}`;

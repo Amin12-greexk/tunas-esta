@@ -11,6 +11,7 @@ import inquiry from "./inquiry";
 import galeriAlbum from "./galeriAlbum";
 import galeriFoto from "./galeriFoto";
 import navigation from "./navigation";
+import tentang from "./tentang";
 
 export default [
   settings,
@@ -24,5 +25,6 @@ export default [
   inquiry,
   galeriAlbum,
   galeriFoto,
-  navigation
+  navigation,
+  tentang
 ];
