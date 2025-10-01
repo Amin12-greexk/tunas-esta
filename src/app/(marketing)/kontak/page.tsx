@@ -29,17 +29,17 @@ export default function KontakPage() {
     {
       icon: MapPin,
       title: "Head Office",
-      details: ["Jl. Raya Industri No. 88", "Kudus, Jawa Tengah 59332", "Indonesia"],
+      details: ["Jl. Semarang - Kudus", "Demak, Jawa Tengah 59516", "Indonesia"],
     },
     {
       icon: Phone,
       title: "Phone",
-      details: ["+62 291 123456", "+62 821 3456 7890", "Fax: +62 291 123457"],
+      details: ["+62 291 123456"],
     },
     {
       icon: Mail,
       title: "Email",
-      details: ["info@tunasesta.co.id", "export@tunasesta.co.id", "sales@tunasesta.co.id"],
+      details: ["info@tunasesta.co.id"],
     },
     {
       icon: Clock,
@@ -145,7 +145,7 @@ export default function KontakPage() {
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
               <div className="mb-8">
                 <h2 className="text-3xl font-bold text-zinc-900 mb-4">Send Us a Message</h2>
-                <p className="text-zinc-600">Fill out the form below and we'll get back to you as soon as possible.</p>
+                <p className="text-zinc-600">If you have any questions or business inquiries regarding our products/services, please contact us for details.</p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>

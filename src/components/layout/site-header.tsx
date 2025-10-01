@@ -40,7 +40,6 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
     { title: "Berita", href: "/berita", description: "Informasi & update terbaru." },
     { title: "Karier", href: "/karier", description: "Lowongan pekerjaan & kesempatan bergabung." },
     { title: "Galeri", href: "/galeri", description: "Dokumentasi kegiatan & produk." },
-    { title: "Kontak", href: "/kontak", description: "Hubungi kami untuk informasi lebih lanjut." },
   ];
 
   const NAV = navItems.length ? navItems : FALLBACK;

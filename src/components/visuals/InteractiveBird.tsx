@@ -2,238 +2,367 @@
 
 import { useEffect, useRef, useCallback } from "react";
 
-// Tipe untuk pemetaan animasi
-type AnimationSequence = {
-  row: number; // Baris di sprite sheet (dimulai dari 0)
-  frameCount: number; // Jumlah frame dalam sekuens ini
-  speed: number; // Frame per detik
+/** ---- Types (export supaya bisa dipakai di page jika perlu) ---- */
+export type SequenceKey =
+  | "FLY_FLAP"
+  | "FLY_GLIDE"
+  | "FLEE_FLAP"
+  | "LAND"
+  | "TAKEOFF"
+  | "PERCH_IDLE"
+  | "PERCH_LOOK_L"
+  | "PERCH_LOOK_R"
+  | "PERCH_PREEN"
+  | "PERCH_PECK"
+  | "SEARCH_GLIDE";
+
+export type AnimationSequence = {
+  row: number;      // baris di sprite sheet (0-based)
+  frames: number;   // jumlah kolom aktif
+  fps: number;      // frame per detik
+  loop?: boolean;   // default true
 };
 
-// Mendefinisikan semua status burung yang mungkin
+export type AnimationMap = Partial<Record<SequenceKey, AnimationSequence>> & {
+  // minimal wajib ada
+  FLY_FLAP: AnimationSequence;
+  PERCH_IDLE: AnimationSequence;
+  FLEE_FLAP: AnimationSequence;
+};
+
 type BirdStatus = "FLYING" | "SEARCHING" | "APPROACHING" | "PERCHED" | "FLEEING";
 
-// Tipe AnimationMap yang fleksibel
-type AnimationMap = {
-  FLYING: AnimationSequence;
-  PERCHED: AnimationSequence;
-  FLEEING: AnimationSequence;
-  SEARCHING?: AnimationSequence; // Opsional
-  APPROACHING?: AnimationSequence; // Opsional
-};
-
-// Tipe untuk properti komponen
 type Props = {
   spriteSheetSrc: string;
+  spriteCols: number;
+  spriteRows: number;
+  animationMap: AnimationMap;
   birdSize?: number;
   flySpeed?: number;
   mouseRepelDistance?: number;
   perchSelectors?: string[];
-  spriteCols: number;
-  spriteRows: number;
-  animationMap: AnimationMap;
 };
 
-// PERBAIKAN: Tipe internal state diubah untuk logika orientasi baru
 type BirdState = {
   pos: { x: number; y: number };
   vel: { x: number; y: number };
-  angle: number; // Sekarang hanya untuk miring naik/turun
-  direction: number; // 1 untuk kiri, -1 untuk kanan
+  angle: number;
+  dir: number; // 1 = kiri, -1 = kanan
   state: BirdStatus;
-  animationTimer: number;
-  currentFrame: number;
+
+  seqKey: SequenceKey;
+  seqTimer: number;
+  seqFrame: number;
+  seqOneShotNext?: SequenceKey;
+
+  nextIdleAt: number;
 };
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const angleLerp = (a: number, b: number, t: number) => {
-    let delta = b - a;
-    if (delta > Math.PI) delta -= 2 * Math.PI;
-    if (delta < -Math.PI) delta += 2 * Math.PI;
-    return a + delta * t;
+  let d = b - a;
+  if (d > Math.PI) d -= 2 * Math.PI;
+  if (d < -Math.PI) d += 2 * Math.PI;
+  return a + d * t;
 };
 
 export default function InteractiveBird({
   spriteSheetSrc,
+  spriteCols,
+  spriteRows,
+  animationMap,
   birdSize = 85,
   flySpeed = 180,
   mouseRepelDistance = 120,
   perchSelectors = ["h1", "h2", ".perch-spot"],
-  spriteCols,
-  spriteRows,
-  animationMap,
 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const birdRef = useRef<BirdState | null>(null);
-  const spriteImageRef = useRef<HTMLImageElement | null>(null);
-  const spriteFrameSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
-  const perchPointsRef = useRef<{ x: number; y: number }[]>([]);
-  const targetPerchRef = useRef<{ x: number; y: number } | null>(null);
-  const mousePosRef = useRef<{ x: number; y: number }>({ x: -1000, y: -1000 });
-  const timersRef = useRef<{ stateChange: number; flee: number }>({ stateChange: 0, flee: 0 });
+  const imgRef = useRef<HTMLImageElement | null>(null);
+  const frameSizeRef = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
   const lastTimeRef = useRef<number>(0);
-  const animationFrameId = useRef<number>(0);
+  const rafRef = useRef<number>(0);
 
-  const scanPerchPoints = useCallback(() => {
-    const points: { x: number; y: number }[] = [];
-    const selectors = perchSelectors.join(", ");
-    if (!selectors) return;
-    document.querySelectorAll(selectors).forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      if (rect.width > birdSize) {
-        points.push({ x: rect.left + rect.width / 2, y: rect.top - 10 });
-      }
+  const perchPtsRef = useRef<{ x: number; y: number }[]>([]);
+  const targetPerchRef = useRef<{ x: number; y: number } | null>(null);
+  const mousePosRef = useRef<{ x: number; y: number }>({ x: -9999, y: -9999 });
+  const timersRef = useRef<{ stateChange: number; flee: number }>({ stateChange: 0, flee: 0 });
+
+  const scanPerch = useCallback(() => {
+    const list: { x: number; y: number }[] = [];
+    const sel = perchSelectors.join(", ");
+    if (!sel) return;
+    document.querySelectorAll(sel).forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.width > birdSize) list.push({ x: r.left + r.width / 2, y: r.top - 10 });
     });
-    perchPointsRef.current = points;
+    perchPtsRef.current = list;
   }, [perchSelectors, birdSize]);
+
+  const play = (key: SequenceKey, oneShotNext?: SequenceKey) => {
+    const bird = birdRef.current!;
+    bird.seqKey = key;
+    bird.seqTimer = 0;
+    bird.seqFrame = 0;
+    bird.seqOneShotNext = oneShotNext;
+  };
 
   useEffect(() => {
     const canvas = canvasRef.current!;
     const ctx = canvas.getContext("2d")!;
-    let isCancelled = false;
-    
+    let cancelled = false;
+
     const setup = () => {
-        const pr = Math.max(1, window.devicePixelRatio || 1);
-        canvas.width = window.innerWidth * pr;
-        canvas.height = window.innerHeight * pr;
-        ctx.setTransform(pr, 0, 0, pr, 0, 0);
+      const pr = Math.max(1, window.devicePixelRatio || 1);
+      canvas.width = window.innerWidth * pr;
+      canvas.height = window.innerHeight * pr;
+      ctx.setTransform(pr, 0, 0, pr, 0, 0);
 
-        birdRef.current = {
-            pos: { x: window.innerWidth * 0.8, y: window.innerHeight * 0.2 },
-            vel: { x: -flySpeed, y: (Math.random() - 0.5) * flySpeed * 0.5 },
-            angle: 0,
-            direction: 1, // Mulai menghadap kiri (sesuai sprite)
-            state: "FLYING", 
-            animationTimer: 0, 
-            currentFrame: 0,
-        };
-        timersRef.current.stateChange = Date.now() + 4000;
+      birdRef.current = {
+        pos: { x: window.innerWidth * 0.8, y: window.innerHeight * 0.25 },
+        vel: { x: -flySpeed, y: (Math.random() - 0.5) * flySpeed * 0.5 },
+        angle: 0,
+        dir: 1,
+        state: "FLYING",
+        seqKey: "FLY_FLAP",
+        seqTimer: 0,
+        seqFrame: 0,
+        nextIdleAt: 0,
+      };
+      timersRef.current.stateChange = Date.now() + 4000;
     };
-    
-    const tick = (currentTime: number) => {
-      if (isCancelled || !birdRef.current) return;
-      
-      const dt = Math.min(0.032, (currentTime - lastTimeRef.current) / 1000);
-      lastTimeRef.current = currentTime;
 
-      const bird = birdRef.current;
+    const tick = (tNow: number) => {
+      if (cancelled || !birdRef.current) return;
+      const dt = Math.min(0.032, (tNow - lastTimeRef.current) / 1000);
+      lastTimeRef.current = tNow;
+
       const now = Date.now();
-      const prevState = bird.state;
+      const bird = birdRef.current;
 
-      // --- Logika State Machine ---
-      const mouseDistance = Math.hypot(bird.pos.x - mousePosRef.current.x, bird.pos.y - mousePosRef.current.y);
-      if (mouseDistance < mouseRepelDistance && bird.state !== "FLEEING") {
+      // --- State Machine ---
+      const md = Math.hypot(bird.pos.x - mousePosRef.current.x, bird.pos.y - mousePosRef.current.y);
+      if (md < mouseRepelDistance && bird.state !== "FLEEING") {
         bird.state = "FLEEING";
+        play("FLEE_FLAP");
         timersRef.current.flee = now + 2000;
       }
 
       switch (bird.state) {
-        case "FLYING": if (now > timersRef.current.stateChange) bird.state = "SEARCHING"; bird.vel.x += (Math.random() - 0.5) * 200 * dt; bird.vel.y += (Math.random() - 0.5) * 200 * dt; break;
-        case "SEARCHING": const closestPerch = perchPointsRef.current.sort((a, b) => Math.hypot(a.x-bird.pos.x, a.y-bird.pos.y) - Math.hypot(b.x-bird.pos.x, b.y-bird.pos.y))[0]; if (closestPerch) { targetPerchRef.current = closestPerch; bird.state = "APPROACHING"; } else { bird.state = "FLYING"; timersRef.current.stateChange = now + 5000; } break;
-        case "APPROACHING": if (!targetPerchRef.current) { bird.state = "SEARCHING"; break; } const target = targetPerchRef.current; const distanceToTarget = Math.hypot(target.x - bird.pos.x, target.y - bird.pos.y); if (distanceToTarget < 10) { bird.state = "PERCHED"; bird.pos = target; timersRef.current.stateChange = now + (3000 + Math.random() * 4000); } else { const desiredVel = { x: target.x - bird.pos.x, y: target.y - bird.pos.y }; const speed = Math.min(flySpeed * 1.5, distanceToTarget * 2); const mag = Math.hypot(desiredVel.x, desiredVel.y) || 1; bird.vel.x = lerp(bird.vel.x, (desiredVel.x / mag) * speed, 0.1); bird.vel.y = lerp(bird.vel.y, (desiredVel.y / mag) * speed, 0.1); } break;
-        case "PERCHED": bird.vel = { x: 0, y: 0 }; if (now > timersRef.current.stateChange) { bird.state = "FLYING"; targetPerchRef.current = null; bird.vel = { x: (Math.random()-0.5) * flySpeed, y: -flySpeed }; timersRef.current.stateChange = now + (5000 + Math.random() * 5000); } break;
-        case "FLEEING": const repelAngle = Math.atan2(bird.pos.y - mousePosRef.current.y, bird.pos.x - mousePosRef.current.x); bird.vel.x = lerp(bird.vel.x, Math.cos(repelAngle) * flySpeed * 2, 0.1); bird.vel.y = lerp(bird.vel.y, Math.sin(repelAngle) * flySpeed * 2, 0.1); if (now > timersRef.current.flee) { bird.state = "FLYING"; timersRef.current.stateChange = now + 5000; } break;
-      }
-      
-      if(bird.state !== prevState) bird.currentFrame = 0;
+        case "FLYING": {
+          if (now > timersRef.current.stateChange) bird.state = "SEARCHING";
+          bird.vel.x += (Math.random() - 0.5) * 80 * dt;
+          bird.vel.y += (Math.random() - 0.5) * 60 * dt;
+          if (animationMap.FLY_GLIDE && Math.random() < 0.005) play("FLY_GLIDE");
+          break;
+        }
+        case "SEARCHING": {
+          bird.vel.x += (Math.random() - 0.5) * 50 * dt;
+          bird.vel.y += (Math.random() - 0.5) * 40 * dt;
+          // cari perch terdekat (tanpa sort)
+          let best: { x: number; y: number } | null = null;
+          let bestD = Infinity;
+          for (const p of perchPtsRef.current) {
+            const d = (p.x - bird.pos.x) ** 2 + (p.y - bird.pos.y) ** 2;
+            if (d < bestD) { bestD = d; best = p; }
+          }
+          if (best) {
+            targetPerchRef.current = best;
+            bird.state = "APPROACHING";
+            if (bird.seqKey !== "FLY_FLAP") play("FLY_FLAP");
+          } else {
+            bird.state = "FLYING";
+            timersRef.current.stateChange = now + 5000;
+          }
+          break;
+        }
+        case "APPROACHING": {
+          const tp = targetPerchRef.current;
+          if (!tp) { bird.state = "SEARCHING"; break; }
+          const dx = tp.x - bird.pos.x;
+          const dy = tp.y - bird.pos.y;
+          const dist = Math.hypot(dx, dy);
 
-      // Update posisi & kecepatan
-      const speed = Math.hypot(bird.vel.x, bird.vel.y);
-      const maxCurrentSpeed = bird.state === 'FLEEING' ? flySpeed * 2 : flySpeed;
-      if (speed > maxCurrentSpeed) { bird.vel.x = (bird.vel.x / speed) * maxCurrentSpeed; bird.vel.y = (bird.vel.y / speed) * maxCurrentSpeed; }
+          if (dist < 40 && animationMap.LAND) {
+            play("LAND", "PERCH_IDLE");
+            bird.state = "PERCHED";
+            bird.vel.x = 0; bird.vel.y = 0;
+            bird.nextIdleAt = now + 800;
+          } else if (dist < 15) {
+            bird.state = "PERCHED";
+            bird.vel.x = 0; bird.vel.y = 0;
+            play("PERCH_IDLE");
+            bird.nextIdleAt = now + 800;
+          } else {
+            const mag = Math.max(1, dist);
+            const spd = Math.min(flySpeed * 1.2, Math.max(flySpeed * 0.3, dist * 1.5));
+            const f = dist < 50 ? 0.15 : 0.08;
+            bird.vel.x = lerp(bird.vel.x, (dx / mag) * spd, f);
+            bird.vel.y = lerp(bird.vel.y, (dy / mag) * spd, f);
+            if (bird.seqKey !== "FLY_FLAP") play("FLY_FLAP");
+          }
+          break;
+        }
+        case "PERCHED": {
+          if (targetPerchRef.current) {
+            bird.pos.x = lerp(bird.pos.x, targetPerchRef.current.x, 0.2);
+            bird.pos.y = lerp(bird.pos.y, targetPerchRef.current.y, 0.2);
+          }
+          bird.vel.x = 0; bird.vel.y = 0;
+
+          if (now > bird.nextIdleAt) {
+            const picks = [
+              "PERCH_IDLE",
+              animationMap.PERCH_LOOK_L && "PERCH_LOOK_L",
+              animationMap.PERCH_LOOK_R && "PERCH_LOOK_R",
+              animationMap.PERCH_PREEN && "PERCH_PREEN",
+              animationMap.PERCH_PECK && "PERCH_PECK",
+            ].filter(Boolean) as SequenceKey[];
+            const next = picks[Math.floor(Math.random() * picks.length)] || "PERCH_IDLE";
+            const oneShot = next !== "PERCH_IDLE";
+            play(next, oneShot ? "PERCH_IDLE" : undefined);
+            bird.nextIdleAt = now + (oneShot ? 1200 : 2000 + Math.random() * 2000);
+          }
+
+          if (Math.random() < 0.0015) {
+            if (animationMap.TAKEOFF) play("TAKEOFF", "FLY_FLAP"); else play("FLY_FLAP");
+            bird.state = "FLYING";
+            targetPerchRef.current = null;
+            const d = Math.random() > 0.5 ? 1 : -1;
+            bird.vel = { x: d * flySpeed * 0.7, y: -flySpeed * 0.8 };
+            timersRef.current.stateChange = now + (4000 + Math.random() * 4000);
+          }
+          break;
+        }
+        case "FLEEING": {
+          const ang = Math.atan2(bird.pos.y - mousePosRef.current.y, bird.pos.x - mousePosRef.current.x);
+          bird.vel.x = lerp(bird.vel.x, Math.cos(ang) * flySpeed * 2.5, 0.15);
+          bird.vel.y = lerp(bird.vel.y, Math.sin(ang) * flySpeed * 2.5, 0.15);
+          if (bird.seqKey !== "FLEE_FLAP") play("FLEE_FLAP");
+          if (now > timersRef.current.flee) {
+            bird.state = "FLYING";
+            timersRef.current.stateChange = now + 5000;
+            play("FLY_FLAP");
+          }
+          break;
+        }
+      }
+
+      // limit kecepatan
+      const sp = Math.hypot(bird.vel.x, bird.vel.y);
+      const maxSp = bird.state === "FLEEING" ? flySpeed * 2.5 : flySpeed * 1.2;
+      if (sp > maxSp) {
+        bird.vel.x = (bird.vel.x / sp) * maxSp;
+        bird.vel.y = (bird.vel.y / sp) * maxSp;
+      }
+
+      // posisi + pantulan
       bird.pos.x += bird.vel.x * dt;
       bird.pos.y += bird.vel.y * dt;
       if (bird.pos.x < birdSize) bird.vel.x = Math.abs(bird.vel.x);
       if (bird.pos.x > window.innerWidth - birdSize) bird.vel.x = -Math.abs(bird.vel.x);
       if (bird.pos.y < birdSize) bird.vel.y = Math.abs(bird.vel.y);
       if (bird.pos.y > window.innerHeight - birdSize) bird.vel.y = -Math.abs(bird.vel.y);
-      
-      // --- LOGIKA VISUAL & ORIENTASI BARU ---
-      let anim: AnimationSequence;
-      switch (bird.state) {
-        case "SEARCHING": anim = animationMap.SEARCHING || animationMap.FLYING; break;
-        case "APPROACHING": anim = animationMap.APPROACHING || animationMap.FLYING; break;
-        default: anim = animationMap[bird.state];
+
+      // orientasi & angle
+      if (bird.state !== "PERCHED") {
+        const targetDir = bird.vel.x > 0 ? -1 : 1; // kanan = -1 (sprite default kiri)
+        bird.dir = lerp(bird.dir, targetDir, 0.25);
       }
-      
-      // 1. Tentukan arah hadap horizontal (kiri/kanan)
-      if (bird.state !== 'PERCHED') {
-        // Arah mengikuti kecepatan horizontal
-        const targetDirection = bird.vel.x > 0 ? -1 : 1; // -1 (kanan), 1 (kiri)
-        bird.direction = lerp(bird.direction, targetDirection, 0.1);
-      }
-      
-      // 2. Tentukan sudut miring (naik/turun)
-      let targetAngle = 0;
-      if (bird.state !== 'PERCHED') {
-        // Miring sedikit berdasarkan kecepatan vertikal
-        targetAngle = (bird.vel.y / flySpeed) * 0.4 * bird.direction;
-      }
+      const flip = bird.dir >= 0 ? 1 : -1;
+      const targetAngle = bird.state !== "PERCHED" ? (bird.vel.y / flySpeed) * 0.4 * flip : 0;
       bird.angle = angleLerp(bird.angle, targetAngle, 0.1);
 
-      bird.animationTimer += dt;
-      if (bird.animationTimer > 1 / anim.speed) {
-        bird.currentFrame = (bird.currentFrame + 1) % anim.frameCount;
-        bird.animationTimer = 0;
+      // advance sequence
+      const seq = animationMap[bird.seqKey]!;
+      const loop = seq.loop ?? true;
+      bird.seqTimer += dt;
+      if (bird.seqTimer >= 1 / seq.fps) {
+        bird.seqTimer = 0;
+        bird.seqFrame++;
+        if (bird.seqFrame >= seq.frames) {
+          if (loop) {
+            bird.seqFrame = 0;
+          } else {
+            bird.seqFrame = seq.frames - 1;
+            if (bird.seqOneShotNext) play(bird.seqOneShotNext);
+          }
+        }
       }
-      
-      // --- Render ---
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (spriteImageRef.current) {
-        const frame = spriteFrameSize.current;
+
+      // render
+      const img = imgRef.current;
+      if (img) {
+        const f = frameSizeRef.current;
         const w = birdSize;
-        const h = birdSize * (frame.h / frame.w);
+        const h = birdSize * (f.h / f.w);
+        const col = Math.min(seq.frames - 1, bird.seqFrame);
+        const row = seq.row;
 
-        const currentCol = bird.currentFrame % spriteCols;
-        const currentRow = anim.row;
-
+        const ctx = canvas.getContext("2d")!;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         ctx.translate(bird.pos.x, bird.pos.y);
-        // PERBAIKAN: Gunakan scale untuk membalik sprite, lalu rotate untuk miring
-        ctx.scale(bird.direction, 1);
+        ctx.scale(flip, 1);
         ctx.rotate(bird.angle);
-        
         ctx.drawImage(
-          spriteImageRef.current,
-          currentCol * frame.w, currentRow * frame.h,
-          frame.w, frame.h,
+          img,
+          col * f.w, row * f.h,
+          f.w, f.h,
           -w / 2, -h / 2,
           w, h
         );
         ctx.restore();
       }
-      animationFrameId.current = requestAnimationFrame(tick);
+
+      rafRef.current = requestAnimationFrame(tick);
     };
 
+    // load sprite
     const img = new Image();
     img.onload = () => {
-      spriteImageRef.current = img;
-      spriteFrameSize.current = {
+      imgRef.current = img;
+      frameSizeRef.current = {
         w: img.naturalWidth / spriteCols,
         h: img.naturalHeight / spriteRows,
       };
+      const ctx = canvas.getContext("2d")!;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       setup();
-      scanPerchPoints();
+      scanPerch();
       lastTimeRef.current = performance.now();
-      animationFrameId.current = requestAnimationFrame(tick);
+      rafRef.current = requestAnimationFrame(tick);
     };
     img.src = spriteSheetSrc;
 
-    const onMouseMove = (e: MouseEvent) => { mousePosRef.current = { x: e.clientX, y: e.clientY }; };
-    const onResize = () => { setup(); scanPerchPoints(); };
-    
-    window.addEventListener("mousemove", onMouseMove);
+    const onMove = (e: MouseEvent) => (mousePosRef.current = { x: e.clientX, y: e.clientY });
+    const onResize = () => { setup(); scanPerch(); };
+
+    window.addEventListener("mousemove", onMove);
     window.addEventListener("resize", onResize);
-    const scanInterval = setInterval(scanPerchPoints, 2000);
+    const interval = setInterval(scanPerch, 2000);
 
     return () => {
-      isCancelled = true;
-      cancelAnimationFrame(animationFrameId.current);
-      window.removeEventListener("mousemove", onMouseMove);
+      cancelled = true;
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener("mousemove", onMove);
       window.removeEventListener("resize", onResize);
-      clearInterval(scanInterval);
+      clearInterval(interval);
     };
-  }, [spriteSheetSrc, birdSize, flySpeed, mouseRepelDistance, perchSelectors, scanPerchPoints, spriteCols, spriteRows, animationMap]);
+  }, [spriteSheetSrc, spriteCols, spriteRows, animationMap, birdSize, flySpeed, mouseRepelDistance, perchSelectors, scanPerch]);
 
-  return <canvas ref={canvasRef} aria-hidden style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", pointerEvents: "none", zIndex: 9999 }} />;
+  return (
+    <canvas
+      ref={canvasRef}
+      aria-hidden
+      style={{
+        position: "fixed",
+        inset: 0,
+        width: "100vw",
+        height: "100vh",
+        pointerEvents: "none",
+        zIndex: 9999,
+      }}
+    />
+  );
 }
-

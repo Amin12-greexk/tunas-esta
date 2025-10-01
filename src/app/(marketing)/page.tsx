@@ -1,4 +1,4 @@
-// src/app/(marketing)/page.tsx
+// src/app/(marketing)/page.tsx - OPTIMIZED VERSION
 import { fetchSanity } from "@/lib/sanity.client";
 import {
   qHero,
@@ -33,14 +33,19 @@ export default async function HomePage() {
 
   return (
     <main className="overflow-hidden">
-      {/* Hero Section */}
+      {/* 1. Hero Section - Dark gradient background */}
       <ScrollAnimationWrapper>
         {hero && <Hero {...hero} />}
       </ScrollAnimationWrapper>
 
-      <SectionSeparator variant="wave" />
+      {/* Separator 1: Light zigzag after dark hero */}
+      <SectionSeparator 
+        variant="zigzag" 
+        color="gray" 
+        height="md"
+      />
 
-      {/* Tentang Kami Section */}
+      {/* 2. Tentang Kami Section - Light gradient background */}
       {tentang && (
         <ScrollAnimationWrapper>
           <section className="py-24 bg-gradient-to-br from-white via-gray-50 to-green-50 relative">
@@ -83,8 +88,8 @@ export default async function HomePage() {
                   <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
                     <span className="text-2xl">💪</span>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">25+ Tahun Pengalaman</h3>
-                  <p className="text-gray-600">Kepercayaan yang terbukti sejak 1998</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Produk Berkualitas</h3>
+                  <p className="text-gray-600">Kualitas terbukti</p>
                 </div>
               </div>
             </div>
@@ -92,57 +97,92 @@ export default async function HomePage() {
         </ScrollAnimationWrapper>
       )}
 
-      <SectionSeparator variant="diagonal" />
+      {/* Separator 2: Green zigzag transition to stats */}
+      <SectionSeparator 
+        variant="zigzag" 
+        color="green" 
+        height="lg"
+      />
 
-      {/* Stats Section */}
+      {/* 3. Stats Section - White background */}
       <ScrollAnimationWrapper>
         <Stats />
       </ScrollAnimationWrapper>
 
-      <SectionSeparator variant="curve" />
+      {/* Separator 3: Blue zigzag for visual variety */}
+      <SectionSeparator 
+        variant="zigzag" 
+        color="blue" 
+        height="md"
+      />
 
-      {/* Trusted By Section */}
+      {/* 4. Trusted By Section - Light background */}
       <ScrollAnimationWrapper>
         <TrustedBy />
       </ScrollAnimationWrapper>
 
-      <SectionSeparator variant="wave" color="green" />
+      {/* Separator 4: Gradient zigzag for premium feel */}
+      <SectionSeparator 
+        variant="zigzag" 
+        color="gradient" 
+        height="lg"
+      />
 
-      {/* Features Section */}
+      {/* 5. Features Section - Zinc background */}
       <ScrollAnimationWrapper>
         <Features />
       </ScrollAnimationWrapper>
 
-      <SectionSeparator variant="zigzag" />
+      {/* Separator 5: Green zigzag leading to products */}
+      <SectionSeparator 
+        variant="zigzag" 
+        color="green" 
+        height="md"
+      />
 
-      {/* Product Showcase */}
+      {/* 6. Product Showcase - Complex gradient background */}
       {produk?.length > 0 && (
         <ScrollAnimationWrapper>
           <ProductShowcase products={produk.slice(0, 6)} />
         </ScrollAnimationWrapper>
       )}
 
-      <SectionSeparator variant="curve" color="blue" />
+      {/* Separator 6: Blue zigzag for tech transition */}
+      <SectionSeparator 
+        variant="zigzag" 
+        color="blue" 
+        height="lg"
+      />
 
-      {/* Certifications */}
+      {/* 7. Certifications - Brand colored background */}
       {sertifikasi?.length > 0 && (
         <ScrollAnimationWrapper>
           <Certifications items={sertifikasi} />
         </ScrollAnimationWrapper>
       )}
 
-      <SectionSeparator variant="diagonal" direction="right" />
+      {/* Separator 7: Gray zigzag for neutral transition */}
+      <SectionSeparator 
+        variant="zigzag" 
+        color="gray" 
+        height="md"
+      />
 
-      {/* Latest News */}
+      {/* 8. Latest News - Light background */}
       {berita?.length > 0 && (
         <ScrollAnimationWrapper>
           <NewsSection articles={berita.slice(0, 3)} />
         </ScrollAnimationWrapper>
       )}
 
-      <SectionSeparator variant="wave" color="gradient" />
+      {/* Separator 8: Gradient zigzag for final CTA buildup */}
+      <SectionSeparator 
+        variant="zigzag" 
+        color="gradient" 
+        height="lg"
+      />
 
-      {/* CTA Section */}
+      {/* 9. CTA Section - Dark gradient background */}
       <ScrollAnimationWrapper>
         <CTA />
       </ScrollAnimationWrapper>
