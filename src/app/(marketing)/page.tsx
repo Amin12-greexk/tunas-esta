@@ -61,9 +61,9 @@ export default async function HomePage() {
                 <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
                   {tentang.title}
                 </h2>
-                <div className="prose prose-xl mx-auto text-gray-700 max-w-4xl">
-                  <PortableText value={tentang.body} />
-                </div>
+                <div className="prose prose-xl mx-auto text-gray-700 max-w-4xl text-justify">
+  <PortableText value={tentang.body} />
+</div>
               </div>
               
               {/* Additional Info Cards */}
@@ -101,26 +101,6 @@ export default async function HomePage() {
       <SectionSeparator 
         variant="zigzag" 
         color="green" 
-        height="lg"
-      />
-
-
-      {/* Separator 3: Blue zigzag for visual variety */}
-      <SectionSeparator 
-        variant="zigzag" 
-        color="blue" 
-        height="md"
-      />
-
-      {/* 4. Trusted By Section - Light background */}
-      <ScrollAnimationWrapper>
-        <TrustedBy />
-      </ScrollAnimationWrapper>
-
-      {/* Separator 4: Gradient zigzag for premium feel */}
-      <SectionSeparator 
-        variant="zigzag" 
-        color="gradient" 
         height="lg"
       />
 

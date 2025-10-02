@@ -12,7 +12,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Menu, Phone, ChevronDown } from "lucide-react";
+import { Menu, Phone, ChevronDown, X } from "lucide-react";
 
 export type NavItem = { title: string; href: string; description?: string };
 
@@ -145,7 +145,7 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
           </Link>
         </div>
 
-        {/* MOBILE: tombol menu (diletakkan di luar grup kanan agar justify-between bekerja) */}
+        {/* MOBILE: tombol menu */}
         <div className="lg:hidden">
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -157,9 +157,88 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
               </button>
             </SheetTrigger>
 
-            {/* MOBILE: konten menu (tidak ada perubahan di sini) */}
+            {/* MOBILE: konten menu */}
             <SheetContent side="right" className="w-80 bg-white p-0">
-              {/* ... (konten sheet tidak perlu diubah) ... */}
+              <SheetHeader className="sr-only">
+                <SheetTitle>Menu Navigasi</SheetTitle>
+                <SheetDescription>
+                  Navigasi utama untuk {siteTitle}
+                </SheetDescription>
+              </SheetHeader>
+
+              {/* Header Mobile Menu */}
+              <div className="sticky top-0 z-10 bg-white border-b border-gray-200 p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    {logoUrl ? (
+                      <Image
+                        src={logoUrl}
+                        alt={siteTitle}
+                        width={40}
+                        height={40}
+                        className="rounded-lg shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 via-green-600 to-green-700 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                        {siteTitle.charAt(0)}
+                      </div>
+                    )}
+                    <div>
+                      <h2 className="font-bold text-gray-900">{firstLine}</h2>
+                      <p className="text-xs text-gray-500">{secondLine}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setOpen(false)}
+                    aria-label="Tutup menu"
+                    className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-600" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Navigation Items */}
+              <div className="flex-1 overflow-y-auto">
+                <nav className="p-5 space-y-2">
+                  {NAV.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="block p-4 rounded-xl hover:bg-green-50 transition-all duration-300 group"
+                    >
+                      <h3 className="font-semibold text-gray-900 group-hover:text-green-600 transition-colors">
+                        {item.title}
+                      </h3>
+                      {item.description && (
+                        <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+                          {item.description}
+                        </p>
+                      )}
+                    </Link>
+                  ))}
+                </nav>
+
+                {/* CTA Section */}
+                <div className="p-5 border-t border-gray-200 bg-gray-50">
+                  <Link
+                    href="/kontak"
+                    onClick={() => setOpen(false)}
+                    className="flex items-center justify-center w-full px-5 py-3 rounded-xl bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold transition-all duration-300 shadow-lg hover:shadow-xl gap-2"
+                  >
+                    <Phone className="w-5 h-5" />
+                    Hubungi Kami
+                  </Link>
+                </div>
+
+                {/* Footer Info */}
+                <div className="p-5 bg-gray-100 text-center">
+                  <p className="text-xs text-gray-600">
+                    © 2024 {siteTitle}. All rights reserved.
+                  </p>
+                </div>
+              </div>
             </SheetContent>
           </Sheet>
         </div>

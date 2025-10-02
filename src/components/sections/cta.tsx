@@ -198,9 +198,6 @@ export function CTA() {
                       <Phone className="w-5 h-5" />
                       <span>Hubungi Sekarang</span>
                     </button>
-                    <button className="flex-1 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold py-4 px-6 rounded-xl transition-all duration-300">
-                      Download Katalog
-                    </button>
                   </div>
                 </div>
               </div>
@@ -216,8 +213,8 @@ export function CTA() {
         >
           <div className="bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-2xl p-8 border border-white/10">
             <p className="text-lg text-gray-300">
-              <span className="text-white font-semibold">Dipercaya oleh 500+ mitra global</span> • 
-              Melayani 15+ negara • 25+ tahun pengalaman • 98% tingkat kepuasan klien
+              <span className="text-white font-semibold">Text Percobaan Text Percobaan</span> • 
+              Text PercobaanText PercobaanText PercobaanText PercobaanText Percobaan
             </p>
           </div>
         </div>

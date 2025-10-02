@@ -247,9 +247,6 @@ export function ProductShowcase({ products = [] }: ProductShowcaseProps) {
                   <span>Hubungi Sales</span>
                   <ArrowRight className="w-5 h-5" />
                 </button>
-                <button className="px-8 py-4 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white font-bold rounded-xl transition-all duration-300 border border-white/30">
-                  Download Katalog
-                </button>
               </div>
             </div>
           </div>
