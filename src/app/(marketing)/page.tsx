@@ -104,10 +104,6 @@ export default async function HomePage() {
         height="lg"
       />
 
-      {/* 3. Stats Section - White background */}
-      <ScrollAnimationWrapper>
-        <Stats />
-      </ScrollAnimationWrapper>
 
       {/* Separator 3: Blue zigzag for visual variety */}
       <SectionSeparator 

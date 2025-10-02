@@ -25,10 +25,10 @@ export function TrustedBy() {
           className="text-center mb-12"
         >
           <h3 className="text-lg font-semibold text-zinc-600 mb-2">
-            Trusted by Leading Companies Worldwide
+           Dipercaya oleh Perusahaan Terkemuka di Seluruh Dunia
           </h3>
           <p className="text-sm text-zinc-500">
-            Our products are exported to premium retailers and distributors globally
+            Produk kami diekspor ke pengecer dan distributor premium di seluruh dunia
           </p>
         </motion.div>
 
