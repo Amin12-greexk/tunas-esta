@@ -6,50 +6,82 @@ import { PortableText } from "@portabletext/react";
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
-import { 
-  ChevronLeft, 
-  Calendar, 
-  Clock, 
-  User, 
-  Share2, 
-  Facebook, 
-  Twitter, 
-  Linkedin,
-  Tag
-} from "lucide-react";
 
+import {
+  ChevronLeft,
+  Calendar,
+  Clock,
+  User,
+  Share2,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Tag,
+} from "lucide-react";
+import type { PortableTextBlock, PortableTextSpan } from "@portabletext/types";
+
+/** ==== Types ==== */
+type Slug = { current: string };
+
+type Article = {
+  _id: string;
+  title: string;
+  slug: Slug;
+  date?: string;
+  coverUrl?: string;
+  excerpt?: string;
+  body?: PortableTextBlock[];
+  tags?: string[];
+};
+
+/** SSG params */
 export async function generateStaticParams() {
-  const articles = await fetchSanity<any[]>(qAllBerita);
-  return articles?.map((article) => ({
+  const articles = await fetchSanity<Article[]>(qAllBerita);
+  return (articles ?? []).map((article) => ({
     slug: article.slug.current,
-  })) || [];
+  }));
 }
 
-export default async function BeritaDetailPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const article = await fetchSanity<any>(qBeritaBySlug, { slug: params.slug });
+// Next.js 15 requires async params
+type Props = {
+  params: Promise<{ slug: string }>;
+};
+
+export default async function BeritaDetailPage({ params }: Props) {
+  // Await the params
+  const { slug } = await params;
   
+  const article = await fetchSanity<Article | null>(qBeritaBySlug, {
+    slug: slug,
+  });
+
   if (!article) {
     notFound();
   }
 
-  // Get related articles
-  const relatedArticles = await fetchSanity<any[]>(qAllBerita);
-  const filtered = relatedArticles?.filter(a => a.slug.current !== params.slug).slice(0, 3);
+  // Related articles
+  const relatedArticles = await fetchSanity<Article[]>(qAllBerita);
+  const filtered =
+    (relatedArticles ?? [])
+      .filter((a) => a.slug.current !== slug)
+      .slice(0, 3);
 
-  // Estimate reading time
-  const wordCount = article.body?.reduce((count: number, block: any) => {
-    if (block._type === 'block' && block.children) {
-      return count + block.children.reduce((sum: number, child: any) => 
-        sum + (child.text?.split(' ').length || 0), 0
-      );
-    }
-    return count;
-  }, 0) || 0;
-  const readingTime = Math.ceil(wordCount / 200);
+  // Estimasi reading time (tanpa any)
+  const wordCount: number =
+    (article.body ?? []).reduce((count: number, block: PortableTextBlock) => {
+      if (block._type === "block" && Array.isArray(block.children)) {
+        const children = block.children as PortableTextSpan[];
+        const wordsInBlock = children.reduce((sum, child) => {
+          const text = typeof child.text === "string" ? child.text : "";
+          const words = text.trim().split(/\s+/).filter(Boolean).length;
+          return sum + words;
+        }, 0);
+        return count + wordsInBlock;
+      }
+      return count;
+    }, 0) ?? 0;
+
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
     <main className="min-h-screen">
@@ -58,21 +90,26 @@ export default async function BeritaDetailPage({
         <div className="container">
           {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-zinc-600 mb-8">
-            <Link href="/" className="hover:text-brand-600 transition-colors">Home</Link>
+            <Link href="/" className="hover:text-brand-600 transition-colors">
+              Home
+            </Link>
             <ChevronLeft className="w-4 h-4 rotate-180" />
-            <Link href="/berita" className="hover:text-brand-600 transition-colors">News</Link>
+            <Link href="/berita" className="hover:text-brand-600 transition-colors">
+              News
+            </Link>
             <ChevronLeft className="w-4 h-4 rotate-180" />
-            <span className="text-zinc-900 font-medium truncate max-w-xs">{article.title}</span>
+            <span className="text-zinc-900 font-medium truncate max-w-xs">
+              {article.title}
+            </span>
           </nav>
 
           <div className="max-w-4xl mx-auto">
-            {/* Article Header */}
+            {/* Header */}
             <header className="mb-8">
-              {/* Tags */}
-              {article.tags?.length > 0 && (
+              {article.tags?.length ? (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {article.tags.map((tag: string) => (
-                    <span 
+                  {article.tags.map((tag) => (
+                    <span
                       key={tag}
                       className="inline-flex items-center gap-1 px-3 py-1 bg-brand-50 text-brand-600 rounded-full text-sm font-medium"
                     >
@@ -81,31 +118,29 @@ export default async function BeritaDetailPage({
                     </span>
                   ))}
                 </div>
-              )}
+              ) : null}
 
               <h1 className="text-4xl md:text-5xl font-bold text-zinc-900 mb-6">
                 {article.title}
               </h1>
 
-              {/* Meta Info */}
               <div className="flex flex-wrap items-center gap-6 text-zinc-600">
                 <div className="flex items-center gap-2">
                   <User className="w-5 h-5" />
                   <span>Admin</span>
                 </div>
-                {article.date && (
+                {article.date ? (
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
                     <span>{format(new Date(article.date), "MMMM d, yyyy")}</span>
                   </div>
-                )}
+                ) : null}
                 <div className="flex items-center gap-2">
                   <Clock className="w-5 h-5" />
                   <span>{readingTime} min read</span>
                 </div>
               </div>
 
-              {/* Share Buttons */}
               <div className="flex items-center gap-4 mt-6 pt-6 border-t">
                 <span className="text-sm font-medium text-zinc-700">Share:</span>
                 <button className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
@@ -124,7 +159,7 @@ export default async function BeritaDetailPage({
             </header>
 
             {/* Featured Image */}
-            {article.coverUrl && (
+            {article.coverUrl ? (
               <div className="relative aspect-video rounded-2xl overflow-hidden mb-12 shadow-2xl">
                 <Image
                   src={article.coverUrl}
@@ -134,23 +169,23 @@ export default async function BeritaDetailPage({
                   priority
                 />
               </div>
-            )}
+            ) : null}
 
-            {/* Article Content */}
+            {/* Content */}
             <article className="prose prose-lg max-w-none mb-12">
-              {article.excerpt && (
+              {article.excerpt ? (
                 <p className="text-xl text-zinc-600 leading-relaxed mb-8">
                   {article.excerpt}
                 </p>
-              )}
-              {article.body && <PortableText value={article.body} />}
+              ) : null}
+              {article.body ? <PortableText value={article.body} /> : null}
             </article>
 
-            {/* Article Footer */}
+            {/* Footer */}
             <footer className="py-8 border-t border-b">
               <div className="flex flex-wrap items-center justify-between gap-4">
                 <div className="flex flex-wrap gap-2">
-                  {article.tags?.map((tag: string) => (
+                  {article.tags?.map((tag) => (
                     <Link
                       key={tag}
                       href={`/berita?tag=${tag}`}
@@ -170,8 +205,8 @@ export default async function BeritaDetailPage({
         </div>
       </section>
 
-      {/* Related Articles */}
-      {filtered && filtered.length > 0 && (
+      {/* Related */}
+      {filtered.length > 0 ? (
         <section className="py-16 bg-gradient-to-b from-white to-zinc-50">
           <div className="container">
             <div className="max-w-6xl mx-auto">
@@ -180,31 +215,35 @@ export default async function BeritaDetailPage({
               </h2>
               <div className="grid gap-8 md:grid-cols-3">
                 {filtered.map((related) => (
-                  <Link 
+                  <Link
                     key={related._id}
                     href={`/berita/${related.slug.current}`}
                     className="group"
                   >
                     <article className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
                       <div className="relative h-48 bg-zinc-100">
-                        {related.coverUrl && (
+                        {related.coverUrl ? (
                           <Image
                             src={related.coverUrl}
                             alt={related.title}
                             fill
                             className="object-cover group-hover:scale-110 transition-transform duration-700"
                           />
-                        )}
+                        ) : null}
                       </div>
                       <div className="p-6">
                         <h3 className="text-lg font-semibold text-zinc-900 mb-2 line-clamp-2 group-hover:text-brand-600 transition-colors">
                           {related.title}
                         </h3>
-                        <p className="text-sm text-zinc-600 line-clamp-2 mb-4">
-                          {related.excerpt}
-                        </p>
+                        {related.excerpt ? (
+                          <p className="text-sm text-zinc-600 line-clamp-2 mb-4">
+                            {related.excerpt}
+                          </p>
+                        ) : null}
                         <div className="flex items-center gap-4 text-xs text-zinc-500">
-                          <span>{format(new Date(related.date), "MMM d, yyyy")}</span>
+                          {related.date ? (
+                            <span>{format(new Date(related.date), "MMM d, yyyy")}</span>
+                          ) : null}
                           <span>3 min read</span>
                         </div>
                       </div>
@@ -215,7 +254,7 @@ export default async function BeritaDetailPage({
             </div>
           </div>
         </section>
-      )}
+      ) : null}
     </main>
   );
 }

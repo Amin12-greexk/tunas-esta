@@ -3,34 +3,38 @@ import { notFound } from "next/navigation";
 import { fetchSanity } from "@/lib/sanity.client";
 import { qKarierBySlug, qAllKarier } from "@/lib/sanity.queries";
 import { PortableText } from "@portabletext/react";
+import type { PortableTextBlock } from "@portabletext/types";
 import Link from "next/link";
-import { 
-  ChevronLeft, 
-  MapPin, 
-  Briefcase, 
-  Clock, 
-  Mail, 
-  Building,
-  Users,
-  Calendar,
-  DollarSign
-} from "lucide-react";
+import { ChevronLeft, MapPin, Clock, Building } from "lucide-react";
 import { JobApplicationForm } from "@/components/job-application-form";
 
+type Slug = { current: string };
+
+type Job = {
+  posisi: string;
+  slug: Slug;
+  lokasi?: string;
+  tipe?: string;
+  deskripsi?: PortableTextBlock[];
+  kualifikasi?: PortableTextBlock[];
+  emailTujuan?: string;
+};
+
 export async function generateStaticParams() {
-  const jobs = await fetchSanity<any[]>(qAllKarier);
-  return jobs?.map((job) => ({
-    slug: job.slug.current,
-  })) || [];
+  const jobs = await fetchSanity<Job[]>(qAllKarier);
+  return jobs?.map((job) => ({ slug: job.slug.current })) ?? [];
 }
 
+// ⬇️ Perubahan penting: params adalah Promise dan kita await
 export default async function KarierDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const job = await fetchSanity<any>(qKarierBySlug, { slug: params.slug });
-  
+  const { slug } = await params;
+
+  const job = await fetchSanity<Job | null>(qKarierBySlug, { slug });
+
   if (!job) {
     notFound();
   }
@@ -51,10 +55,8 @@ export default async function KarierDetailPage({
           </nav>
 
           <div className="max-w-4xl">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              {job.posisi}
-            </h1>
-            
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">{job.posisi}</h1>
+
             <div className="flex flex-wrap items-center gap-6 text-brand-100">
               {job.lokasi && (
                 <div className="flex items-center gap-2">
@@ -85,9 +87,7 @@ export default async function KarierDetailPage({
             <div className="lg:col-span-2">
               {/* Job Description */}
               <div className="mb-12">
-                <h2 className="text-2xl font-bold text-zinc-900 mb-6">
-                  Job Description
-                </h2>
+                <h2 className="text-2xl font-bold text-zinc-900 mb-6">Job Description</h2>
                 <div className="prose prose-lg max-w-none text-zinc-700">
                   {job.deskripsi && <PortableText value={job.deskripsi} />}
                 </div>
@@ -96,7 +96,7 @@ export default async function KarierDetailPage({
               {/* Qualifications */}
               <div className="mb-12">
                 <h2 className="text-2xl font-bold text-zinc-900 mb-6">
-                  Qualifications & Requirements
+                  Qualifications &amp; Requirements
                 </h2>
                 <div className="prose prose-lg max-w-none text-zinc-700">
                   {job.kualifikasi && <PortableText value={job.kualifikasi} />}
@@ -105,11 +105,9 @@ export default async function KarierDetailPage({
 
               {/* Application Form */}
               <div className="bg-zinc-50 rounded-2xl p-8">
-                <h2 className="text-2xl font-bold text-zinc-900 mb-6">
-                  Apply for This Position
-                </h2>
-                <JobApplicationForm 
-                  jobTitle={job.posisi} 
+                <h2 className="text-2xl font-bold text-zinc-900 mb-6">Apply for This Position</h2>
+                <JobApplicationForm
+                  jobTitle={job.posisi}
                   emailTo={job.emailTujuan || "hr@tunasesta.co.id"}
                 />
               </div>
@@ -120,9 +118,7 @@ export default async function KarierDetailPage({
               <div className="sticky top-24 space-y-6">
                 {/* Job Summary Card */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 border border-zinc-100">
-                  <h3 className="text-lg font-bold text-zinc-900 mb-4">
-                    Job Summary
-                  </h3>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-4">Job Summary</h3>
                   <div className="space-y-4">
                     <div>
                       <p className="text-sm text-zinc-500 mb-1">Posted Date</p>
@@ -149,9 +145,7 @@ export default async function KarierDetailPage({
 
                 {/* Benefits Card */}
                 <div className="bg-gradient-to-br from-brand-50 to-white rounded-2xl p-6 border border-brand-100">
-                  <h3 className="text-lg font-bold text-zinc-900 mb-4">
-                    What We Offer
-                  </h3>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-4">What We Offer</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-brand-100 rounded-full flex items-center justify-center mt-0.5">
@@ -188,9 +182,7 @@ export default async function KarierDetailPage({
 
                 {/* Share Job */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 border border-zinc-100">
-                  <h3 className="text-lg font-bold text-zinc-900 mb-4">
-                    Share This Job
-                  </h3>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-4">Share This Job</h3>
                   <div className="flex gap-3">
                     <button className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
                       Facebook

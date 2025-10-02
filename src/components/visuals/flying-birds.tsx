@@ -143,7 +143,7 @@ export default function FlyingBirdsCanvas({
         if (neighborCount > 0) {
           avgVel.x /= neighborCount; avgVel.y /= neighborCount;
           limit(avgVel, me.uniqueMaxSpeed);
-          let steerAlign = sub(avgVel, me.vel);
+          const steerAlign = sub(avgVel, me.vel);
           limit(steerAlign, maxForce);
           steerAlign.x *= alignWeight; steerAlign.y *= alignWeight;
           me.acc = add(me.acc, steerAlign);
@@ -151,13 +151,13 @@ export default function FlyingBirdsCanvas({
           center.x /= neighborCount; center.y /= neighborCount;
           const desired = sub(center, me.pos);
           limit(desired, me.uniqueMaxSpeed);
-          let steerCoh = sub(desired, me.vel);
+          const steerCoh = sub(desired, me.vel);
           limit(steerCoh, maxForce);
           steerCoh.x *= cohWeight; steerCoh.y *= cohWeight;
           me.acc = add(me.acc, steerCoh);
 
           limit(separation, me.uniqueMaxSpeed);
-          let steerSep = sub(separation, me.vel);
+          const steerSep = sub(separation, me.vel);
           limit(steerSep, maxForce);
           steerSep.x *= sepWeight; steerSep.y *= sepWeight;
           me.acc = add(me.acc, steerSep);

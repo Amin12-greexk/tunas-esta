@@ -97,7 +97,7 @@ export default function KontakPage() {
               </span>
               <h1 className="text-5xl md:text-6xl font-bold mb-6">Contact Us</h1>
               <p className="text-lg md:text-xl text-brand-100">
-                Have questions about our products or services? We're here to help and would love to hear from you.
+                Have questions about our products or services? We&rsquo;re here to help and would love to hear from you.
               </p>
             </motion.div>
           </div>
@@ -338,7 +338,7 @@ export default function KontakPage() {
                       </div>
                       <div>
                         <p className="font-semibold text-zinc-900">Email Us</p>
-                        <p className="text-sm text-zinc-600">We'll reply within 24h</p>
+                        <p className="text-sm text-zinc-600">We&rsquo;ll reply within 24h</p>
                       </div>
                     </div>
                     <svg className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">

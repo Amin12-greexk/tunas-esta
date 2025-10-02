@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Star, Award, Shield, Sparkles, ArrowRight, CheckCircle } from "lucide-react";
 
-interface Product {
+export interface Product {
   _id: string;
   title: string;
   description?: string;
   category?: string;
-  specifications?: any;
+  specifications?: unknown;
   features?: string[];
   slug?: {
     current: string;

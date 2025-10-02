@@ -2,10 +2,22 @@
 import { fetchSanity } from "@/lib/sanity.client";
 import { qAllBerita } from "@/lib/sanity.queries";
 import { NewsCard } from "@/components/news-card";
-import { motion } from "framer-motion";
+
+// Minimal type untuk items berita (samakan dengan field yang dikembalikan qAllBerita)
+type Slug = { current: string };
+
+type Article = {
+  _id: string;
+  title: string;
+  slug: Slug;
+  excerpt?: string;
+  coverUrl?: string;
+  date?: string;
+  tags?: string[];
+};
 
 export default async function BeritaPage() {
-  const berita = await fetchSanity<any[]>(qAllBerita);
+  const berita = await fetchSanity<Article[]>(qAllBerita);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50">
@@ -33,8 +45,8 @@ export default async function BeritaPage() {
               <button
                 key={category}
                 className={`px-6 py-2 rounded-full font-medium transition-all ${
-                  category === "All" 
-                    ? "bg-brand-600 text-white shadow-lg" 
+                  category === "All"
+                    ? "bg-brand-600 text-white shadow-lg"
                     : "bg-white text-zinc-700 hover:bg-brand-50 hover:text-brand-600 border border-zinc-200"
                 }`}
               >
@@ -47,7 +59,7 @@ export default async function BeritaPage() {
           {berita?.length ? (
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {berita.map((item, index) => (
-                <NewsCard key={item._id || index} {...item} index={index} />
+                <NewsCard key={item._id ?? index} {...item} index={index} />
               ))}
             </div>
           ) : (

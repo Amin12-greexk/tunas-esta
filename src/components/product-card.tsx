@@ -7,7 +7,7 @@ interface ProductCardProps {
   nama: string;
   deskripsi?: string;
   fotoUrl?: string;
-  spesifikasi?: any;
+  spesifikasi?: string[];   // ✅ ganti dari `any` → `string[]`
   onClick?: () => void;
 }
 
@@ -83,7 +83,7 @@ export function ProductCard({
               <span className="text-sm font-semibold text-green-700">Spesifikasi QC:</span>
             </div>
             <div className="text-xs text-green-600 space-y-1">
-              {spesifikasi.slice(0, 3).map((spec: string, index: number) => (
+              {spesifikasi.slice(0, 3).map((spec, index) => (
                 <div key={index} className="flex items-center gap-1">
                   <div className="w-1 h-1 bg-green-500 rounded-full"></div>
                   <span>{spec}</span>

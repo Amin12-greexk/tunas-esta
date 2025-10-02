@@ -1,3 +1,4 @@
+// src/app/(marketing)/karier/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,16 +7,29 @@ import { qAllKarier } from "../../../lib/sanity.queries";
 import { JobCard } from "../../../components/job-card";
 import { Briefcase, Users, Target, Heart, Clock } from "lucide-react";
 import InteractiveBird from "../../../components/visuals/InteractiveBird";
-// (opsional) kalau mau type-check animationMap: 
 // import type { AnimationMap } from "../../../components/visuals/InteractiveBird";
 
+type Slug = { current: string };
+
+type Job = {
+  _id?: string;
+  posisi: string;
+  slug: Slug;
+  lokasi?: string;
+  tipe?: string;
+  department?: string;   // ← ditambahkan agar bisa diteruskan ke JobCard
+  deskripsi?: unknown;   // daftar Portable Text; tidak dipakai di list
+  kualifikasi?: unknown; // idem
+  emailTujuan?: string;
+};
+
 export default function KarierPage() {
-  const [lowongan, setLowongan] = useState<any[] | null>(null);
+  const [lowongan, setLowongan] = useState<Job[] | null>(null);
 
   useEffect(() => {
     async function getLowongan() {
       try {
-        const data = await fetchSanity<any[]>(qAllKarier);
+        const data = await fetchSanity<Job[]>(qAllKarier);
         setLowongan(data);
       } catch (error) {
         console.error("Gagal mengambil data lowongan:", error);
@@ -34,29 +48,23 @@ export default function KarierPage() {
 
   // === Animation map (9 kolom × 6 baris — sesuaikan row bila berbeda) ===
   const owlAnimationMap /* : AnimationMap */ = {
-    // TERBANG
-    FLY_FLAP:   { row: 1, frames: 9, fps: 14 },  // baris 2, kepak
-    FLY_GLIDE:  { row: 0, frames: 9, fps: 10 },  // baris 1, glide (jika ada)
-    FLEE_FLAP:  { row: 2, frames: 9, fps: 20 },  // baris 3, kepak cepat saat kabur
-
-    // TRANSISI (opsional, one-shot; kalau sheet-mu tidak ada, boleh hapus)
-    LAND:       { row: 3, frames: 9, fps: 16, loop: false }, // mendarat
-    TAKEOFF:    { row: 0, frames: 9, fps: 16, loop: false }, // lepas landas (pakai baris yang sesuai)
-
-    // HINGGAP / IDLE VARIATIF
-    PERCH_IDLE:   { row: 5, frames: 9, fps: 6 },               // baris 6, idle
-    PERCH_LOOK_L: { row: 4, frames: 9, fps: 10, loop: false }, // baris 5, menoleh kiri
-    PERCH_LOOK_R: { row: 4, frames: 9, fps: 10, loop: false }, // (boleh sama baris jika look L/R satu baris)
-    PERCH_PREEN:  { row: 4, frames: 9, fps: 12, loop: false }, // bersih-bulu
-    PERCH_PECK:   { row: 4, frames: 9, fps: 12, loop: false }, // mematuk
-    // SEARCH_GLIDE juga bisa reuse row glide:
+    FLY_FLAP:   { row: 1, frames: 9, fps: 14 },
+    FLY_GLIDE:  { row: 0, frames: 9, fps: 10 },
+    FLEE_FLAP:  { row: 2, frames: 9, fps: 20 },
+    LAND:       { row: 3, frames: 9, fps: 16, loop: false },
+    TAKEOFF:    { row: 0, frames: 9, fps: 16, loop: false },
+    PERCH_IDLE:   { row: 5, frames: 9, fps: 6 },
+    PERCH_LOOK_L: { row: 4, frames: 9, fps: 10, loop: false },
+    PERCH_LOOK_R: { row: 4, frames: 9, fps: 10, loop: false },
+    PERCH_PREEN:  { row: 4, frames: 9, fps: 12, loop: false },
+    PERCH_PECK:   { row: 4, frames: 9, fps: 12, loop: false },
     SEARCH_GLIDE: { row: 0, frames: 9, fps: 10 },
   };
 
   return (
     <>
       <InteractiveBird
-        spriteSheetSrc="/bird.png"   // pastikan path file sesuai /public
+        spriteSheetSrc="/bird.png"
         birdSize={85}
         flySpeed={180}
         mouseRepelDistance={150}
@@ -80,7 +88,7 @@ export default function KarierPage() {
                 <span className="block text-brand-200">With Us</span>
               </h1>
               <p className="text-lg md:text-xl text-brand-100 mb-8 max-w-2xl mx-auto">
-                Be part of a dynamic team that's shaping the future of Indonesia's bird's nest industry. We're looking for passionate individuals who share our commitment to excellence.
+                Be part of a dynamic team that&rsquo;s shaping the future of Indonesia&rsquo;s bird&rsquo;s nest industry. We&rsquo;re looking for passionate individuals who share our commitment to excellence.
               </p>
               <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto mt-12">
                 <div><div className="text-3xl font-bold text-white mb-1">100+</div><div className="text-sm text-brand-200">Employees</div></div>
@@ -146,7 +154,14 @@ export default function KarierPage() {
             ) : lowongan.length > 0 ? (
               <div className="max-w-4xl mx-auto space-y-4">
                 {lowongan.map((job, index) => (
-                  <JobCard key={job._id || index} {...job} />
+                  <JobCard
+                    key={job._id ?? index}
+                    posisi={job.posisi}
+                    slug={job.slug}
+                    lokasi={job.lokasi}
+                    tipe={job.tipe}
+                    department={job.department}
+                  />
                 ))}
               </div>
             ) : (
@@ -169,10 +184,10 @@ export default function KarierPage() {
           <div className="container">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 mb-4 perch-spot">
-                Don't See the Right Position?
+                Don&rsquo;t See the Right Position?
               </h2>
               <p className="text-lg text-zinc-600 mb-8">
-                We're always looking for talented individuals. Send us your resume and we'll keep you in mind for future opportunities.
+                We&rsquo;re always looking for talented individuals. Send us your resume and we&rsquo;ll keep you in mind for future opportunities.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <button className="px-8 py-4 bg-brand-600 text-white rounded-full font-semibold hover:bg-brand-700 transition-colors shadow-xl hover:shadow-2xl">

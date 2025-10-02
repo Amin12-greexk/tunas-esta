@@ -1,3 +1,4 @@
+// src/components/job-card.tsx
 "use client";
 
 import Link from "next/link";
@@ -9,17 +10,21 @@ type JobCardProps = {
   slug: { current: string };
   lokasi?: string;
   tipe?: string;
-  deskripsi?: any;
+  deskripsi?: string | null;  // ← perbaikan dari any
   department?: string;
 };
 
 export function JobCard({ posisi, slug, lokasi, tipe, department }: JobCardProps) {
   const getTypeColor = (type?: string) => {
-    switch(type) {
-      case "Full-time": return "bg-green-100 text-green-700";
-      case "Part-time": return "bg-blue-100 text-blue-700";
-      case "Contract": return "bg-orange-100 text-orange-700";
-      default: return "bg-gray-100 text-gray-700";
+    switch (type) {
+      case "Full-time":
+        return "bg-green-100 text-green-700";
+      case "Part-time":
+        return "bg-blue-100 text-blue-700";
+      case "Contract":
+        return "bg-orange-100 text-orange-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
@@ -41,13 +46,13 @@ export function JobCard({ posisi, slug, lokasi, tipe, department }: JobCardProps
                 <div className="hidden md:flex items-center justify-center w-12 h-12 bg-brand-50 text-brand-600 rounded-xl group-hover:scale-110 transition-transform">
                   <Briefcase className="w-6 h-6" />
                 </div>
-                
+
                 {/* Job Details */}
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-zinc-900 mb-2 group-hover:text-brand-600 transition-colors">
                     {posisi}
                   </h3>
-                  
+
                   <div className="flex flex-wrap items-center gap-4 text-sm text-zinc-600">
                     {lokasi && (
                       <span className="flex items-center gap-1">
@@ -76,11 +81,15 @@ export function JobCard({ posisi, slug, lokasi, tipe, department }: JobCardProps
             <div className="flex items-center gap-4">
               {/* Type Badge */}
               {tipe && (
-                <span className={`px-3 py-1.5 text-xs font-semibold rounded-full ${getTypeColor(tipe)}`}>
+                <span
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-full ${getTypeColor(
+                    tipe
+                  )}`}
+                >
                   {tipe}
                 </span>
               )}
-              
+
               {/* Arrow */}
               <div className="flex items-center justify-center w-10 h-10 bg-brand-50 text-brand-600 rounded-full group-hover:bg-brand-600 group-hover:text-white transition-all">
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />

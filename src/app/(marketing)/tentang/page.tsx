@@ -175,19 +175,24 @@ export default function TentangPage() {
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
             }`}
           >
-            {stats.map((stat, index) => (
-              <div
-                key={index}
-                className="text-center bg-gradient-to-br from-green-50 to-blue-50 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-                style={{ transitionDelay: `${index * 150}ms` }}
-              >
-                <div className="text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
-                  {stat.value}{stat.unit}
-                </div>
-                <div className="text-lg font-semibold text-gray-800 mb-1">{stat.label}</div>
-                <div className="text-sm text-gray-600">{stat.description}</div>
-              </div>
-            ))}
+           {stats.map((stat, index) => (
+  <div
+    key={stat.label ?? index}
+    className="text-center bg-gradient-to-br from-green-50 to-blue-50 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all hover:-translate-y-2"
+    style={{
+      transitionDelay: `${index * 150}ms`,   // dinamis → pakai inline style
+      transitionDuration: '300ms',            // set durasi di style (opsional)
+      willChange: 'transform, box-shadow',    // opsional: performa lebih halus
+    }}
+  >
+    <div className="text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
+      {stat.value}{stat.unit}
+    </div>
+    <div className="text-lg font-semibold text-gray-800 mb-1">{stat.label}</div>
+    <div className="text-sm text-gray-600">{stat.description}</div>
+  </div>
+))}
+
           </div>
         </div>
       </section>

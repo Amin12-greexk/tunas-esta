@@ -1,44 +1,65 @@
-
 // src/app/(marketing)/produk/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import { fetchSanity } from "@/lib/sanity.client";
 import { qProdukBySlug, qAllProduk } from "@/lib/sanity.queries";
-import { PortableText } from "@portabletext/react";
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  ChevronLeft, 
-  Award, 
-  Shield, 
-  CheckCircle, 
-  Package, 
-  Globe, 
+import {
+  ChevronLeft,
+  Award,
+  Shield,
+  CheckCircle,
+  Package,
+  Globe,
   Star,
   Download,
-  Share2
+  Share2,
 } from "lucide-react";
 
+/** ====== Types ====== */
+type ProdukListItem = {
+  _id: string;
+  nama: string;
+  slug: string; // qAllProduk -> "slug": slug.current
+};
+
+type ProdukDetail = {
+  _id: string;
+  nama: string;
+  deskripsi?: string;
+  grade?: string;
+  fotoUrl?: string;
+  spesifikasi?: string[];
+  slug: string; // qProdukBySlug -> "slug": slug.current
+};
+
+/** ====== SSG Params ====== */
 export async function generateStaticParams() {
-  const products = await fetchSanity<any[]>(qAllProduk);
-  return products?.map((product) => ({
-    slug: product.slug,
-  })) || [];
+  const products = await fetchSanity<ProdukListItem[]>(qAllProduk);
+  return products?.map((product) => ({ slug: product.slug })) ?? [];
 }
 
+/** ====== Page ====== */
 export default async function ProdukDetailPage({
   params,
 }: {
-  params: { slug: string };
+  // ⬇️ Perubahan penting: params adalah Promise
+  params: Promise<{ slug: string }>;
 }) {
-  const product = await fetchSanity<any>(qProdukBySlug, { slug: params.slug });
-  
+  // ⬇️ dan kita await
+  const { slug } = await params;
+
+  const product = await fetchSanity<ProdukDetail | null>(qProdukBySlug, {
+    slug,
+  });
+
   if (!product) {
     notFound();
   }
 
   const features = [
     { icon: Shield, label: "100% Natural", desc: "No preservatives or additives" },
-    { icon: Award, label: "Premium Grade", desc: `Grade ${product.grade} quality` },
+    { icon: Award, label: "Premium Grade", desc: `Grade ${product.grade ?? "A"} quality` },
     { icon: Globe, label: "Export Quality", desc: "International standards" },
     { icon: Package, label: "Safe Packaging", desc: "Vacuum sealed freshness" },
   ];
@@ -79,7 +100,7 @@ export default async function ProdukDetailPage({
                       <div className="absolute top-6 right-6">
                         <div className="px-4 py-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg">
                           <span className="text-lg font-bold text-brand-600">
-                            Grade {product.grade}
+                            Grade {product.grade ?? "A"}
                           </span>
                         </div>
                       </div>
@@ -90,15 +111,16 @@ export default async function ProdukDetailPage({
                     </div>
                   )}
                 </div>
-                
-                {/* Thumbnail Gallery (if multiple images) */}
+
+                {/* Thumbnail Gallery (placeholder) */}
                 <div className="grid grid-cols-4 gap-4 mt-6">
-                  {[1,2,3,4].map((i) => (
+                  {[1, 2, 3, 4].map((i) => (
                     <button
                       key={i}
                       className={`relative aspect-square rounded-lg overflow-hidden bg-zinc-100 ${
-                        i === 1 ? 'ring-2 ring-brand-600' : ''
+                        i === 1 ? "ring-2 ring-brand-600" : ""
                       }`}
+                      aria-label={`Thumbnail ${i}`}
                     >
                       <div className="absolute inset-0 bg-zinc-200" />
                     </button>
@@ -115,7 +137,7 @@ export default async function ProdukDetailPage({
                   {product.nama}
                 </h1>
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1" aria-label="Rating 5 of 5">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                     ))}
@@ -141,11 +163,11 @@ export default async function ProdukDetailPage({
               </div>
 
               {/* Specifications */}
-              {product.spesifikasi?.length > 0 && (
+              {product.spesifikasi?.length ? (
                 <div className="mb-8">
                   <h2 className="text-xl font-bold text-zinc-900 mb-4">Specifications</h2>
                   <ul className="space-y-3">
-                    {product.spesifikasi.map((spec: string, index: number) => (
+                    {product.spesifikasi.map((spec, index) => (
                       <li key={index} className="flex items-start gap-3">
                         <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
                         <span className="text-zinc-700">{spec}</span>
@@ -153,7 +175,7 @@ export default async function ProdukDetailPage({
                     ))}
                   </ul>
                 </div>
-              )}
+              ) : null}
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -163,11 +185,18 @@ export default async function ProdukDetailPage({
                 >
                   Get Quote
                 </Link>
-                <button className="flex-1 px-8 py-4 bg-white text-brand-600 border-2 border-brand-600 rounded-full font-semibold hover:bg-brand-50 transition-colors flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  className="flex-1 px-8 py-4 bg-white text-brand-600 border-2 border-brand-600 rounded-full font-semibold hover:bg-brand-50 transition-colors flex items-center justify-center gap-2"
+                >
                   <Download className="w-5 h-5" />
                   Download Spec Sheet
                 </button>
-                <button className="px-6 py-4 bg-zinc-100 text-zinc-700 rounded-full hover:bg-zinc-200 transition-colors">
+                <button
+                  type="button"
+                  className="px-6 py-4 bg-zinc-100 text-zinc-700 rounded-full hover:bg-zinc-200 transition-colors"
+                  aria-label="Share Product"
+                >
                   <Share2 className="w-5 h-5" />
                 </button>
               </div>

@@ -2,13 +2,12 @@
   "name": "tunas-esta",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build --turbopack",
+   "scripts": {
+    "dev": "next dev --turbo",
+    "build": "next build",
     "start": "next start",
-    "lint": "eslint",
-    "prepare": "husky",
-    "seed": "tsx -r dotenv/config scripts/seed.ts dotenv_config_path=.env.local"
+    "lint": "eslint . --ext .ts,.tsx --max-warnings=0",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

@@ -175,9 +175,10 @@ export function TestimonialsSection() {
                   </div>
                 </div>
 
-                <blockquote className="text-xl text-gray-700 leading-relaxed mb-8 italic">
-                  "{testimonials[currentTestimonial].testimonial}"
-                </blockquote>
+               <blockquote className="text-xl text-gray-700 leading-relaxed mb-8 italic">
+  &ldquo;{testimonials[currentTestimonial].testimonial}&rdquo;
+</blockquote>
+
 
                 <div className="bg-green-50 rounded-xl p-4 mb-8">
                   <div className="text-sm font-semibold text-green-700 mb-1">Highlight:</div>
