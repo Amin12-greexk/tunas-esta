@@ -13,6 +13,7 @@ import page from "../schemas/page";
 import inquiry from "../schemas/inquiry";
 import tentang from "../schemas/tentang"; 
 import featuresLocalized from "../schemas/features-localized";
+import navLink from "../schemas/object/navLink";
 
 export const schemaTypes = [
   settings,
@@ -28,5 +29,6 @@ export const schemaTypes = [
   page,
   inquiry,
   tentang,
-  featuresLocalized 
+  featuresLocalized,
+  navLink,
 ];

@@ -12,6 +12,7 @@ import galeriAlbum from "./galeriAlbum";
 import galeriFoto from "./galeriFoto";
 import navigation from "./navigation";
 import tentang from "./tentang";
+import navLink from "./object/navLink";
 
 export default [
   settings,
@@ -26,5 +27,6 @@ export default [
   galeriAlbum,
   galeriFoto,
   navigation,
-  tentang
+  tentang,
+  navLink,
 ];

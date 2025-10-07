@@ -1,7 +1,7 @@
 // src/app/layout.tsx
 import "./globals.css";
 import type { Metadata } from "next";
-import { SiteHeader } from "@/components/layout/site-header";
+import { SiteHeader, type NavItem } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { fetchSanity } from "@/lib/sanity.client";
 import { qSettings, qNavigation } from "@/lib/sanity.queries";
@@ -31,7 +31,6 @@ type Settings =
     }
   | null;
 
-type NavItem = { title: string; href: string };
 type Navigation = { main?: NavItem[]; footer?: NavItem[] } | null;
 
 /** Standarisasi bentuk socials agar selalu object FooterSocials */
@@ -92,13 +91,40 @@ export default async function RootLayout({
 
   const footerSocials = coerceFooterSocials(settings?.socials);
 
+  // Enhanced navigation with submenu for "Tentang"
+  const enhancedNavigation: NavItem[] = navigation?.main ?? [
+    { 
+      title: "Tentang", 
+      href: "/tentang", 
+      description: "Profil perusahaan & sejarah TUNAS ESTA INDONESIA.",
+      submenu: [
+        {
+          title: "Apa itu Sarang Burung Walet",
+          href: "/tentang/apa-itu-sarang-burung-walet",
+          description: "Informasi lengkap tentang sarang burung walet dan manfaatnya"
+        },
+        {
+          title: "Profil Perusahaan",
+          href: "/tentang",
+          description: "Sejarah dan visi misi TUNAS ESTA INDONESIA"
+        }
+      ]
+    },
+    { title: "Produk", href: "/produk", description: "Kategori & ukuran sarang walet." },
+    { title: "Fasilitas", href: "/fasilitas", description: "Pabrik & kapasitas produksi." },
+    { title: "Sertifikasi", href: "/sertifikasi", description: "HACCP, Halal, BPOM, ISO 22000." },
+    { title: "Berita", href: "/berita", description: "Informasi & update terbaru." },
+    { title: "Karier", href: "/karier", description: "Lowongan pekerjaan & kesempatan bergabung." },
+    { title: "Galeri", href: "/galeri", description: "Dokumentasi kegiatan & produk." },
+  ];
+
   return (
     <html lang="id">
       <body className="min-h-screen bg-white text-zinc-800 antialiased">
         <SiteHeader
           logoUrl={settings?.logoUrl}
           siteTitle={settings?.siteTitle ?? "TUNAS ESTA INDONESIA"}
-          navItems={navigation?.main ?? []}
+          navItems={enhancedNavigation}
         />
         {children}
         <SiteFooter

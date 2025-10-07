@@ -162,14 +162,19 @@ export const qAllGaleriFoto = groq`*[_type=="galeriFoto"] | order(_createdAt des
 export const qNavigation = groq`*[_type=="navigation"][0]{
   main[]{
     title,
-    href
+    href,
+    // INI BAGIAN YANG PALING PENTING:
+    // Minta data 'children' untuk setiap item menu
+    children[]{
+      title,
+      href
+    }
   },
   footer[]{
     title,
     href
   }
 }`;
-
 export const qTentang = groq`*[_type=="tentang"][0]{
   title,
   "heroUrl": heroImage.asset->url,
