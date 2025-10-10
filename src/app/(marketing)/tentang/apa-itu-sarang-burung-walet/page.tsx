@@ -27,6 +27,10 @@ export const metadata: Metadata = {
   },
 };
 
+// >>> tambah dua baris ini <<<
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export default function Page() {
   // Keep this file lean; all interactivity hidup di <content.tsx />
   return <ApaItuSarangBurungWaletContent />;

@@ -62,6 +62,11 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
           href: "/tentang",
           description: "Sejarah dan visi misi TUNAS ESTA INDONESIA",
         },
+        {
+          title: "Visi & Misi",
+          href: "/tentang/visi-misi",
+          description: "Visi, misi, dan nilai-nilai perusahaan kami",
+        },
       ],
     },
     { title: "Produk", href: "/produk", description: "Kategori & ukuran sarang walet." },
@@ -153,10 +158,10 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
         {/* Brand */}
         <Link
-  href="/"
-  aria-label="Kembali ke beranda"
-  className="flex items-center gap-3 group relative"
->
+          href="/"
+          aria-label="Kembali ke beranda"
+          className="flex items-center gap-3 group relative"
+        >
           <div className="shrink-0 relative">
             {logoUrl ? (
               <div className="relative">
