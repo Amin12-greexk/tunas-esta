@@ -1,4 +1,5 @@
-// src/app/tentang/visi-misi/page.tsx
+// src/app/(marketing)/tentang/visi-misi/page.tsx
+import Link from "next/link";
 import { Target, Eye, Heart, Award, Users, TrendingUp } from "lucide-react";
 
 export default function VisiMisiPage() {
@@ -11,7 +12,7 @@ export default function VisiMisiPage() {
           <div className="text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-medium mb-6">
               <Target className="w-4 h-4" />
-              <span>Visi & Misi Perusahaan</span>
+              <span>Visi &amp; Misi Perusahaan</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Menuju Masa Depan
@@ -186,10 +187,7 @@ export default function VisiMisiPage() {
                 emoji: "🎯"
               }
             ].map((value, index) => (
-              <div
-                key={index}
-                className="relative group"
-              >
+              <div key={index} className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-600 rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500" />
                 <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
                   <div className="text-5xl mb-4">{value.emoji}</div>
@@ -217,18 +215,18 @@ export default function VisiMisiPage() {
             Mari bersama-sama mewujudkan visi dan misi untuk menghadirkan produk sarang burung walet terbaik ke seluruh dunia
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
+            <Link
               href="/kontak"
               className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white text-green-700 font-semibold text-lg hover:bg-green-50 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105"
             >
               Hubungi Kami
-            </a>
-            <a
+            </Link>
+            <Link
               href="/karier"
               className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white/10 backdrop-blur-sm text-white font-semibold text-lg hover:bg-white/20 transition-all duration-300 border-2 border-white/30 hover:border-white/50"
             >
               Lihat Karier
-            </a>
+            </Link>
           </div>
         </div>
       </section>

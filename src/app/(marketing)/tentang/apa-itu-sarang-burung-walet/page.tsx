@@ -149,7 +149,7 @@ export default function ApaItuSarangBurungWaletContent() {
               <div className="md:col-span-2 rounded-2xl border bg-white p-6 shadow-sm">
                 <h2 className="text-xl font-semibold">Pengertian</h2>
                 <p className="mt-3 text-zinc-600">
-                  Sarang burung walet (edible bird's nest) adalah produk alami yang terbentuk dari
+                  Sarang burung walet (edible birds nest) adalah produk alami yang terbentuk dari
                   air liur walet yang mengeras. Secara tradisional digunakan dalam kuliner & kesehatan.
                 </p>
               </div>

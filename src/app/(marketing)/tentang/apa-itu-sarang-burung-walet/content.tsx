@@ -4,15 +4,27 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Heart, Shield, Star, Award, Leaf, Droplet, Clock,
-  CheckCircle, ArrowRight, Play, BookOpen, Globe,
-  Microscope, Factory, Users, TrendingUp, ChevronLeft
+  Heart,
+  Shield,
+  Star,
+  Award,
+  Droplet,
+  Clock,
+  CheckCircle,
+  ArrowRight,
+  Play,
+  BookOpen,
+  Factory,
+  TrendingUp,
+  ChevronLeft,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function ApaItuSarangBurungWaletContent() {
-  const [activeSection, setActiveSection] = useState<"pengertian"|"manfaat"|"kandungan"|"jenis"|"proses">("pengertian");
+  const [activeSection, setActiveSection] = useState<
+    "pengertian" | "manfaat" | "kandungan" | "jenis" | "proses"
+  >("pengertian");
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -21,9 +33,12 @@ export default function ApaItuSarangBurungWaletContent() {
     const el = sectionRef.current;
     if (!el) return;
 
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) setIsVisible(true);
-    }, { threshold: 0.2 });
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setIsVisible(true);
+      },
+      { threshold: 0.2 }
+    );
 
     observer.observe(el);
     return () => observer.unobserve(el);
@@ -33,15 +48,22 @@ export default function ApaItuSarangBurungWaletContent() {
     <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50">
       {/* Hero */}
       <section className="relative overflow-hidden py-10 md:py-14">
-        {/* fixed: tailwind arbitrary value untuk radial gradient */}
+        {/* Background gradient */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(34,197,94,0.12),transparent_60%)]" />
 
         <div className="container">
-          {/* Breadcrumb — samakan gaya dengan berita/[slug] */}
+          {/* Breadcrumb */}
           <nav className="flex items-center gap-2 text-sm text-zinc-600 mb-6">
-            <Link href="/" className="hover:text-emerald-600 transition-colors">Home</Link>
+            <Link href="/" className="hover:text-emerald-600 transition-colors">
+              Home
+            </Link>
             <ChevronLeft className="w-4 h-4 rotate-180" />
-            <Link href="/tentang" className="hover:text-emerald-600 transition-colors">Tentang</Link>
+            <Link
+              href="/tentang"
+              className="hover:text-emerald-600 transition-colors"
+            >
+              Tentang
+            </Link>
             <ChevronLeft className="w-4 h-4 rotate-180" />
             <span className="text-zinc-900 font-medium truncate max-w-xs md:max-w-md">
               Apa itu Sarang Burung Walet?
@@ -56,7 +78,8 @@ export default function ApaItuSarangBurungWaletContent() {
                 transition={{ duration: 0.4 }}
                 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight"
               >
-                Apa itu <span className="text-emerald-600">Sarang Burung Walet</span>?
+                Apa itu{" "}
+                <span className="text-emerald-600">Sarang Burung Walet</span>?
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 10 }}
@@ -64,12 +87,11 @@ export default function ApaItuSarangBurungWaletContent() {
                 transition={{ delay: 0.05, duration: 0.4 }}
                 className="mt-4 text-zinc-600 leading-relaxed"
               >
-                Ringkasan singkat mengenai pengertian, manfaat, kandungan, hingga proses pengolahan
-                sarang walet berkualitas premium.
+                Ringkasan singkat mengenai pengertian, manfaat, kandungan, hingga
+                proses pengolahan sarang walet berkualitas premium.
               </motion.p>
 
               <div className="mt-6 flex items-center gap-3">
-                {/* anchor ke #manfaat (anchor ditempatkan sebelum tabs di bawah) */}
                 <Link
                   href="#manfaat"
                   className="inline-flex items-center rounded-2xl px-4 py-2 border border-emerald-600 hover:bg-emerald-50 transition"
@@ -105,7 +127,6 @@ export default function ApaItuSarangBurungWaletContent() {
 
       {/* Tabs ringkas */}
       <section className="container" ref={sectionRef}>
-        {/* anchor target untuk tombol 'Jelajahi Manfaat' */}
         <span id="manfaat" className="block -mt-24 pt-24" />
 
         <div className="mt-2 overflow-x-auto no-scrollbar">
@@ -125,7 +146,9 @@ export default function ApaItuSarangBurungWaletContent() {
                   onClick={() => setActiveSection(tab.id as typeof activeSection)}
                   className={[
                     "inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm transition",
-                    active ? "bg-emerald-600 text-white" : "hover:bg-zinc-50"
+                    active
+                      ? "bg-emerald-600 text-white"
+                      : "hover:bg-zinc-50 text-zinc-700",
                   ].join(" ")}
                   type="button"
                   aria-pressed={active}
@@ -150,14 +173,18 @@ export default function ApaItuSarangBurungWaletContent() {
               <div className="md:col-span-2 rounded-2xl border bg-white p-6 shadow-sm">
                 <h2 className="text-xl font-semibold">Pengertian</h2>
                 <p className="mt-3 text-zinc-600">
-                  Sarang burung walet (edible bird’s nest) adalah produk alami yang terbentuk dari
-                  air liur walet yang mengeras. Secara tradisional digunakan dalam kuliner & kesehatan.
+                  Sarang burung walet (edible bird’s nest) adalah produk alami
+                  yang terbentuk dari air liur walet yang mengeras. Secara
+                  tradisional digunakan dalam kuliner & kesehatan.
                 </p>
               </div>
               <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                <h3 className="font-medium flex items-center gap-2"><Shield className="h-4 w-4" /> Keaslian</h3>
+                <h3 className="font-medium flex items-center gap-2">
+                  <Shield className="h-4 w-4" /> Keaslian
+                </h3>
                 <p className="mt-2 text-zinc-600">
-                  Kualitas ditentukan dari sumber rumah walet, metode panen, dan proses pembersihan.
+                  Kualitas ditentukan dari sumber rumah walet, metode panen, dan
+                  proses pembersihan.
                 </p>
               </div>
             </motion.div>
@@ -196,10 +223,18 @@ export default function ApaItuSarangBurungWaletContent() {
             >
               <h2 className="text-xl font-semibold">Kandungan Nutrisi</h2>
               <ul className="mt-3 grid md:grid-cols-2 gap-2 text-zinc-600">
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Protein & asam amino</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Mineral & mikronutrien</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Komponen bioaktif</li>
-                <li className="flex items-center gap-2"><CheckCircle className="h-4 w-4" /> Rendah lemak</li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" /> Protein & asam amino
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" /> Mineral & mikronutrien
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" /> Komponen bioaktif
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" /> Rendah lemak
+                </li>
               </ul>
             </motion.div>
           )}
@@ -212,15 +247,21 @@ export default function ApaItuSarangBurungWaletContent() {
               className="grid md:grid-cols-2 gap-6"
             >
               <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                <h3 className="font-medium flex items-center gap-2"><Star className="h-4 w-4" /> Jenis & Grade</h3>
+                <h3 className="font-medium flex items-center gap-2">
+                  <Star className="h-4 w-4" /> Jenis & Grade
+                </h3>
                 <p className="mt-2 text-zinc-600">
-                  Penilaian umum berdasarkan bentuk (mangkok/oval/patah) dan tingkat kebersihan.
+                  Penilaian umum berdasarkan bentuk (mangkok/oval/patah) dan
+                  tingkat kebersihan.
                 </p>
               </div>
               <div className="rounded-2xl border bg-white p-6 shadow-sm">
-                <h3 className="font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4" /> Standar Mutu</h3>
+                <h3 className="font-medium flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" /> Standar Mutu
+                </h3>
                 <p className="mt-2 text-zinc-600">
-                  Disortir, dicuci, dibersihkan manual; hindari pemutih/perekat kimia.
+                  Disortir, dicuci, dibersihkan manual; hindari pemutih/perekat
+                  kimia.
                 </p>
               </div>
             </motion.div>
@@ -234,9 +275,18 @@ export default function ApaItuSarangBurungWaletContent() {
               className="grid md:grid-cols-3 gap-6"
             >
               {[
-                { title: "Panen & Sortir", desc: "Seleksi awal menjaga kualitas awal sarang." },
-                { title: "Pembersihan", desc: "Penghilangan bulu/impuritas secara hati-hati." },
-                { title: "Pengeringan & QC", desc: "Pengeringan terukur & pemeriksaan akhir." },
+                {
+                  title: "Panen & Sortir",
+                  desc: "Seleksi awal menjaga kualitas awal sarang.",
+                },
+                {
+                  title: "Pembersihan",
+                  desc: "Penghilangan bulu/impuritas secara hati-hati.",
+                },
+                {
+                  title: "Pengeringan & QC",
+                  desc: "Pengeringan terukur & pemeriksaan akhir.",
+                },
               ].map((s) => (
                 <div key={s.title} className="rounded-2xl border bg-white p-6 shadow-sm">
                   <h3 className="font-medium">{s.title}</h3>

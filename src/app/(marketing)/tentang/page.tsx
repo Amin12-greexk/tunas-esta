@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { 
-  Award, Globe, Shield, TrendingUp, Target, 
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import {
+  Award, Globe, Shield, TrendingUp, Target,
   ArrowRight, Play, MapPin, Phone, Mail,
   Building, Handshake, Factory
 } from "lucide-react";
 
 export default function TentangPage() {
   const sectionRef = useRef<HTMLElement>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   const [isVisible, setIsVisible] = useState(false);
   const [counters, setCounters] = useState({
     experience: 0,
@@ -17,21 +19,30 @@ export default function TentangPage() {
     capacity: 0
   });
 
-  const finalValues = {
-    experience: 25,
-    countries: 15,
-    employees: 200,
-    capacity: 500
-  };
+  // Memoize final values so reference stays stable and can be used as a dependency safely
+  const finalValues = useMemo(
+    () => ({
+      experience: 25,
+      countries: 15,
+      employees: 200,
+      capacity: 500
+    }),
+    []
+  );
 
   const animateCounters = useCallback(() => {
-    const duration = 2000;
+    const duration = 2000; // ms
     const steps = 60;
     const stepDuration = duration / steps;
 
     let currentStep = 0;
 
-    const timer = setInterval(() => {
+    // Bersihkan interval lama jika ada (jaga-jaga)
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    intervalRef.current = setInterval(() => {
       currentStep++;
       const progress = currentStep / steps;
 
@@ -42,19 +53,27 @@ export default function TentangPage() {
         capacity: Math.floor(finalValues.capacity * progress)
       });
 
-      if (currentStep >= steps) {
-        clearInterval(timer);
+      if (currentStep >= steps && intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
         setCounters(finalValues);
       }
     }, stepDuration);
-  }, [finalValues.experience, finalValues.countries, finalValues.employees, finalValues.capacity]);
+  }, [finalValues]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsVisible(true);
-          animateCounters();
+          // Hindari trigger berulang saat user scroll naik-turun
+          setIsVisible((prev) => {
+            if (!prev) {
+              animateCounters();
+            }
+            return true;
+          });
+          // Unobserve setelah pertama kali terlihat agar tidak retrigger
+          if (sectionRef.current) observer.unobserve(sectionRef.current);
         }
       },
       { threshold: 0.2 }
@@ -64,7 +83,10 @@ export default function TentangPage() {
       observer.observe(sectionRef.current);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [animateCounters]);
 
   const stats = [
@@ -117,21 +139,22 @@ export default function TentangPage() {
       <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-900 via-green-800 to-blue-900 overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-full" 
-               style={{
-                 backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-               }}
-          ></div>
+          <div
+            className="absolute top-0 left-0 w-full h-full"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            }}
+          />
         </div>
 
         {/* Floating Elements */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-green-400/20 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-48 h-48 bg-blue-400/20 rounded-full blur-xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/10 rounded-full blur-xl animate-pulse delay-500"></div>
+        <div className="absolute top-20 left-20 w-32 h-32 bg-green-400/20 rounded-full blur-xl animate-pulse" />
+        <div className="absolute bottom-20 right-20 w-48 h-48 bg-blue-400/20 rounded-full blur-xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/10 rounded-full blur-xl animate-pulse delay-500" />
 
         <div className="container relative z-10 text-center text-white">
           <div className="max-w-4xl mx-auto">
-            <div className="inline-block px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-green-300 rounded-full text-sm font-semibold mb-8 animate-fade-in">
+            <div className="inline-block px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-green-300 rounded-full text-sm font-semibold mb-8">
               Tentang TUNAS ESTA INDONESIA
             </div>
             <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
@@ -140,7 +163,7 @@ export default function TentangPage() {
                 Sarang Walet Indonesia
               </span>
             </h1>
-            
+
             <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed max-w-3xl mx-auto">
               inovasi berkelanjutan, dan komitmen terhadap keunggulan
             </p>
@@ -158,9 +181,9 @@ export default function TentangPage() {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
           <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse"></div>
+            <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse" />
           </div>
         </div>
       </section>
@@ -168,29 +191,29 @@ export default function TentangPage() {
       {/* Stats Section */}
       <section ref={sectionRef} className="py-20 bg-white relative overflow-hidden">
         <div className="container">
-          <div 
+          <div
             className={`grid md:grid-cols-2 lg:grid-cols-4 gap-8 transition-all duration-1000 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
             }`}
           >
-           {stats.map((stat, index) => (
-  <div
-    key={stat.label ?? index}
-    className="text-center bg-gradient-to-br from-green-50 to-blue-50 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all hover:-translate-y-2"
-    style={{
-      transitionDelay: `${index * 150}ms`,   // dinamis → pakai inline style
-      transitionDuration: '300ms',            // set durasi di style (opsional)
-      willChange: 'transform, box-shadow',    // opsional: performa lebih halus
-    }}
-  >
-    <div className="text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
-      {stat.value}{stat.unit}
-    </div>
-    <div className="text-lg font-semibold text-gray-800 mb-1">{stat.label}</div>
-    <div className="text-sm text-gray-600">{stat.description}</div>
-  </div>
-))}
-
+            {stats.map((stat, index) => (
+              <div
+                key={stat.label ?? index}
+                className="text-center bg-gradient-to-br from-green-50 to-blue-50 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all hover:-translate-y-2"
+                style={{
+                  transitionDelay: `${index * 150}ms`,
+                  transitionDuration: "300ms",
+                  willChange: "transform, box-shadow",
+                }}
+              >
+                <div className="text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                  {stat.value}
+                  {stat.unit}
+                </div>
+                <div className="text-lg font-semibold text-gray-800 mb-1">{stat.label}</div>
+                <div className="text-sm text-gray-600">{stat.description}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -209,11 +232,14 @@ export default function TentangPage() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             {values.map((value, index) => (
-              <div key={index} className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group">
-                <div className={`w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+              <div
+                key={index}
+                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group"
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
                   <value.icon className="w-8 h-8 text-white" />
                 </div>
-                
+
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">{value.title}</h3>
                 <p className="text-lg font-semibold text-green-600 mb-4">{value.subtitle}</p>
                 <p className="text-gray-600 leading-relaxed">{value.description}</p>
@@ -238,21 +264,26 @@ export default function TentangPage() {
           <div className="max-w-5xl mx-auto">
             <div className="relative">
               {/* Timeline Line */}
-              <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-green-500 to-blue-500 rounded-full"></div>
-              
+              <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-gradient-to-b from-green-500 to-blue-500 rounded-full" />
+
               {timeline.map((item, index) => (
-                <div key={index} className={`relative flex items-center mb-12 ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}>
+                <div
+                  key={index}
+                  className={`relative flex items-center mb-12 ${
+                    index % 2 === 0 ? "flex-row" : "flex-row-reverse"
+                  }`}
+                >
                   {/* Content */}
-                  <div className={`w-5/12 ${index % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'}`}>
+                  <div className={`w-5/12 ${index % 2 === 0 ? "text-right pr-8" : "text-left pl-8"}`}>
                     <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
                       <div className="text-2xl font-bold text-green-600 mb-2">{item.year}</div>
                       <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
                       <p className="text-gray-600 leading-relaxed">{item.description}</p>
                     </div>
                   </div>
-                  
+
                   {/* Center Icon */}
-                  <div className="absolute left-1/2 transform -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                  <div className="absolute left-1/2 -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
                     <item.icon className="w-8 h-8 text-white" />
                   </div>
                 </div>
@@ -266,9 +297,7 @@ export default function TentangPage() {
       <section className="py-24 bg-gradient-to-br from-green-900 to-blue-900 text-white">
         <div className="container">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              Pencapaian Kami
-            </h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Pencapaian Kami</h2>
             <p className="text-xl text-green-100 max-w-3xl mx-auto">
               Hasil kerja keras dan dedikasi tim dalam mencapai standar kualitas internasional
             </p>
@@ -276,7 +305,10 @@ export default function TentangPage() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {achievements.map((achievement, index) => (
-              <div key={index} className="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:-translate-y-2">
+              <div
+                key={index}
+                className="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:-translate-y-2"
+              >
                 <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
                   <achievement.icon className="w-8 h-8 text-white" />
                 </div>
@@ -297,10 +329,10 @@ export default function TentangPage() {
               Siap Berkolaborasi dengan Kami?
             </h2>
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Bergabunglah dengan ratusan mitra global yang telah mempercayakan kebutuhan 
+              Bergabunglah dengan ratusan mitra global yang telah mempercayakan kebutuhan
               sarang walet premium mereka kepada TUNAS ESTA INDONESIA
             </p>
-            
+
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl">
                 <Phone className="w-6 h-6 text-green-600" />

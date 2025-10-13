@@ -23,11 +23,11 @@ const applicationSchema = z.object({
 
 type ApplicationFormData = z.infer<typeof applicationSchema>;
 
-export function JobApplicationForm({ 
-  jobTitle, 
-  emailTo 
-}: { 
-  jobTitle: string; 
+export function JobApplicationForm({
+  jobTitle,
+  emailTo,
+}: {
+  jobTitle: string;
   emailTo: string;
 }) {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
@@ -46,7 +46,8 @@ export function JobApplicationForm({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
         toast({
           title: "File too large",
           description: "Please upload a file smaller than 5MB",
@@ -69,23 +70,45 @@ export function JobApplicationForm({
     }
 
     setIsSubmitting(true);
-    
+
     try {
-      // TODO: Implement actual form submission
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Build multipart payload so backend bisa terima file + fields
+      const formData = new FormData();
+      formData.append("jobTitle", jobTitle);
+      formData.append("emailTo", emailTo);
+      formData.append("fullName", data.fullName);
+      formData.append("email", data.email);
+      formData.append("phone", data.phone);
+      formData.append("coverLetter", data.coverLetter);
+      formData.append("yearsOfExperience", data.yearsOfExperience);
+      if (data.currentCompany) formData.append("currentCompany", data.currentCompany);
+      formData.append("linkedinUrl", data.linkedinUrl ?? "");
+      formData.append("portfolioUrl", data.portfolioUrl ?? "");
+      formData.append("availability", data.availability);
+      if (data.expectedSalary) formData.append("expectedSalary", data.expectedSalary);
+      formData.append("resume", resumeFile);
+
+      // TODO: ganti endpoint ini sesuai API-mu (mis. /api/job-applications)
+      // Contoh POST; biar tidak error tanpa backend, ini di-comment:
+      // const resp = await fetch("/api/job-applications", { method: "POST", body: formData });
+      // if (!resp.ok) throw new Error("Failed to submit application");
+
+      // Simulasi submit sukses (hapus kalau sudah pakai fetch asli)
+      await new Promise((resolve) => setTimeout(resolve, 1200));
+
       setIsSubmitted(true);
       toast({
         title: "Application submitted!",
         description: "We'll review your application and get back to you soon.",
       });
-      
+
       setTimeout(() => {
         reset();
         setResumeFile(null);
         setIsSubmitted(false);
       }, 3000);
     } catch (error) {
+      console.error("Submit application error:", error);
       toast({
         title: "Error",
         description: "Failed to submit application. Please try again.",
@@ -98,19 +121,30 @@ export function JobApplicationForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Header / Context */}
+      <div className="rounded-xl border border-zinc-200 bg-white p-4 sm:p-5">
+        <p className="text-sm text-zinc-600">
+          Applying for: <span className="font-semibold text-zinc-900">{jobTitle}</span>
+        </p>
+        <p className="mt-1 text-xs text-zinc-500">
+          Applications will be routed to: <span className="font-mono">{emailTo}</span>
+        </p>
+      </div>
+
       {/* Personal Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-zinc-900">Personal Information</h3>
-        
+
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-zinc-700">
               Full Name *
             </label>
             <input
               {...register("fullName")}
+              id="fullName"
               type="text"
-              className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="John Doe"
             />
             {errors.fullName && (
@@ -119,13 +153,14 @@ export function JobApplicationForm({
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="email" className="mb-2 block text-sm font-medium text-zinc-700">
               Email Address *
             </label>
             <input
               {...register("email")}
+              id="email"
               type="email"
-              className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="john@example.com"
             />
             {errors.email && (
@@ -136,13 +171,14 @@ export function JobApplicationForm({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="phone" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="phone" className="mb-2 block text-sm font-medium text-zinc-700">
               Phone Number *
             </label>
             <input
               {...register("phone")}
+              id="phone"
               type="tel"
-              className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="+62 812 3456 7890"
             />
             {errors.phone && (
@@ -151,13 +187,14 @@ export function JobApplicationForm({
           </div>
 
           <div>
-            <label htmlFor="currentCompany" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="currentCompany" className="mb-2 block text-sm font-medium text-zinc-700">
               Current Company
             </label>
             <input
               {...register("currentCompany")}
+              id="currentCompany"
               type="text"
-              className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="PT Example Indonesia"
             />
           </div>
@@ -167,15 +204,16 @@ export function JobApplicationForm({
       {/* Professional Information */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-zinc-900">Professional Information</h3>
-        
+
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="yearsOfExperience" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="yearsOfExperience" className="mb-2 block text-sm font-medium text-zinc-700">
               Years of Experience *
             </label>
             <select
               {...register("yearsOfExperience")}
-              className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              id="yearsOfExperience"
+              className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="">Select experience</option>
               <option value="0-1">0-1 years</option>
@@ -190,12 +228,13 @@ export function JobApplicationForm({
           </div>
 
           <div>
-            <label htmlFor="availability" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="availability" className="mb-2 block text-sm font-medium text-zinc-700">
               Availability *
             </label>
             <select
               {...register("availability")}
-              className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              id="availability"
+              className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               <option value="">Select availability</option>
               <option value="immediately">Immediately</option>
@@ -212,13 +251,14 @@ export function JobApplicationForm({
 
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="linkedinUrl" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="linkedinUrl" className="mb-2 block text-sm font-medium text-zinc-700">
               LinkedIn Profile
             </label>
             <input
               {...register("linkedinUrl")}
+              id="linkedinUrl"
               type="url"
-              className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="https://linkedin.com/in/johndoe"
             />
             {errors.linkedinUrl && (
@@ -227,13 +267,14 @@ export function JobApplicationForm({
           </div>
 
           <div>
-            <label htmlFor="portfolioUrl" className="block text-sm font-medium text-zinc-700 mb-2">
+            <label htmlFor="portfolioUrl" className="mb-2 block text-sm font-medium text-zinc-700">
               Portfolio/Website
             </label>
             <input
               {...register("portfolioUrl")}
+              id="portfolioUrl"
               type="url"
-              className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
               placeholder="https://johndoe.com"
             />
             {errors.portfolioUrl && (
@@ -243,13 +284,14 @@ export function JobApplicationForm({
         </div>
 
         <div>
-          <label htmlFor="expectedSalary" className="block text-sm font-medium text-zinc-700 mb-2">
+          <label htmlFor="expectedSalary" className="mb-2 block text-sm font-medium text-zinc-700">
             Expected Salary (IDR)
           </label>
           <input
             {...register("expectedSalary")}
+            id="expectedSalary"
             type="text"
-            className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
             placeholder="e.g., 10-15 million/month"
           />
         </div>
@@ -257,13 +299,14 @@ export function JobApplicationForm({
 
       {/* Cover Letter */}
       <div>
-        <label htmlFor="coverLetter" className="block text-sm font-medium text-zinc-700 mb-2">
+        <label htmlFor="coverLetter" className="mb-2 block text-sm font-medium text-zinc-700">
           Cover Letter *
         </label>
         <textarea
           {...register("coverLetter")}
+          id="coverLetter"
           rows={6}
-          className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+          className="w-full resize-none rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
           placeholder="Tell us why you're interested in this position and what makes you a great fit..."
         />
         {errors.coverLetter && (
@@ -273,7 +316,7 @@ export function JobApplicationForm({
 
       {/* Resume Upload */}
       <div>
-        <label className="block text-sm font-medium text-zinc-700 mb-2">
+        <label className="mb-2 block text-sm font-medium text-zinc-700">
           Resume/CV * (PDF, DOC, DOCX - Max 5MB)
         </label>
         <div className="relative">
@@ -286,9 +329,9 @@ export function JobApplicationForm({
           />
           <label
             htmlFor="resume-upload"
-            className="flex items-center justify-center gap-3 w-full px-4 py-6 border-2 border-dashed border-zinc-300 rounded-xl hover:border-brand-500 transition-colors cursor-pointer"
+            className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-xl border-2 border-dashed border-zinc-300 px-4 py-6 transition-colors hover:border-brand-500"
           >
-            <Upload className="w-6 h-6 text-zinc-400" />
+            <Upload className="h-6 w-6 text-zinc-400" />
             <span className="text-zinc-600">
               {resumeFile ? resumeFile.name : "Click to upload or drag and drop"}
             </span>
@@ -297,9 +340,10 @@ export function JobApplicationForm({
             <button
               type="button"
               onClick={() => setResumeFile(null)}
-              className="absolute top-2 right-2 p-1 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+              className="absolute right-2 top-2 rounded-lg bg-red-100 p-1 text-red-600 transition-colors hover:bg-red-200"
+              aria-label="Remove uploaded resume"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
@@ -309,25 +353,25 @@ export function JobApplicationForm({
       <button
         type="submit"
         disabled={isSubmitting || isSubmitted}
-        className={`w-full px-8 py-4 font-semibold text-white rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${
-          isSubmitted 
-            ? "bg-green-600 hover:bg-green-700" 
+        className={`flex w-full items-center justify-center gap-2 rounded-xl px-8 py-4 font-semibold text-white transition-all duration-300 ${
+          isSubmitted
+            ? "bg-green-600 hover:bg-green-700"
             : "bg-brand-600 hover:bg-brand-700 hover:shadow-xl"
-        } ${isSubmitting ? "opacity-70 cursor-not-allowed" : ""}`}
+        } ${isSubmitting ? "cursor-not-allowed opacity-70" : ""}`}
       >
         {isSubmitted ? (
           <>
-            <CheckCircle className="w-5 h-5" />
+            <CheckCircle className="h-5 w-5" />
             Application Submitted!
           </>
         ) : isSubmitting ? (
           <>
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
             Submitting...
           </>
         ) : (
           <>
-            <Send className="w-5 h-5" />
+            <Send className="h-5 w-5" />
             Submit Application
           </>
         )}
