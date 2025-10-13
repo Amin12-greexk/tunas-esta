@@ -1,17 +1,15 @@
-// src/app/(marketing)/tentang/page.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { 
-  Award, Users, Globe, Heart, Factory, Shield, TrendingUp, Target, 
-  ArrowRight, Play, CheckCircle, Calendar, MapPin, Phone, Mail,
-  Building, Handshake, Leaf, Star, Eye, Lightbulb
+  Award, Globe, Shield, TrendingUp, Target, 
+  ArrowRight, Play, MapPin, Phone, Mail,
+  Building, Handshake, Factory
 } from "lucide-react";
 
 export default function TentangPage() {
-  const [activeSection, setActiveSection] = useState("sejarah");
-  const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
   const [counters, setCounters] = useState({
     experience: 0,
     countries: 0,
@@ -26,25 +24,7 @@ export default function TentangPage() {
     capacity: 500
   };
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          animateCounters();
-        }
-      },
-      { threshold: 0.2 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  const animateCounters = () => {
+  const animateCounters = useCallback(() => {
     const duration = 2000;
     const steps = 60;
     const stepDuration = duration / steps;
@@ -67,7 +47,25 @@ export default function TentangPage() {
         setCounters(finalValues);
       }
     }, stepDuration);
-  };
+  }, [finalValues.experience, finalValues.countries, finalValues.employees, finalValues.capacity]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          animateCounters();
+        }
+      },
+      { threshold: 0.2 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [animateCounters]);
 
   const stats = [
     { value: counters.experience, unit: "+", label: "Tahun Pengalaman", description: "Sejak 1998" },
@@ -87,7 +85,7 @@ export default function TentangPage() {
 
   const values = [
     {
-      icon: Eye,
+      icon: Target,
       title: "Visi",
       subtitle: "Menjadi Pemimpin Global",
       description: "Menjadi perusahaan sarang walet terdepan di dunia yang dikenal karena kualitas, inovasi, dan komitmen terhadap keberlanjutan untuk kesehatan masyarakat global."
@@ -99,7 +97,7 @@ export default function TentangPage() {
       description: "Menghadirkan produk sarang walet premium dengan standar internasional tertinggi, membangun kemitraan berkelanjutan, dan berkontribusi pada kesehatan masyarakat."
     },
     {
-      icon: Lightbulb,
+      icon: Shield,
       title: "Nilai",
       subtitle: "Fondasi Keunggulan",
       description: "Integritas, kualitas tanpa kompromi, inovasi berkelanjutan, tanggung jawab lingkungan, dan kemitraan jangka panjang yang saling menguntungkan."
@@ -136,7 +134,7 @@ export default function TentangPage() {
             <div className="inline-block px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-green-300 rounded-full text-sm font-semibold mb-8 animate-fade-in">
               Tentang TUNAS ESTA INDONESIA
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
               Produsen
               <span className="block bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                 Sarang Walet Indonesia
@@ -211,8 +209,8 @@ export default function TentangPage() {
 
           <div className="grid lg:grid-cols-3 gap-8">
             {values.map((value, index) => (
-              <div key={index} className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all duration-500 hover:-translate-y-2 group">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+              <div key={index} className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group">
+                <div className={`w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                   <value.icon className="w-8 h-8 text-white" />
                 </div>
                 

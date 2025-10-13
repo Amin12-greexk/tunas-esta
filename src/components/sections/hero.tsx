@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronRight, Play, Star, Shield, Award, Sparkles } from "lucide-react";
+import { ChevronRight, Play, Sparkles } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 
 type HeroProps = {
@@ -32,7 +32,6 @@ export function Hero({
     return Array.from(new Set(arr)).filter(Boolean);
   }, [bgUrl, bgUrls]);
 
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [index, setIndex] = useState(0);
 
   // auto-rotate slideshow
@@ -165,7 +164,6 @@ export function Hero({
 
             {videoUrl && (
               <button
-                onClick={() => setIsVideoPlaying(true)}
                 className="group inline-flex items-center gap-3 px-8 py-4 font-medium text-white border-2 border-white/20 rounded-full backdrop-blur-sm hover:bg-white/10 transition-all duration-300"
               >
                 <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-white/20 group-hover:bg-white/30 transition-colors">
