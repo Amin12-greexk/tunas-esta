@@ -1,197 +1,37 @@
 // src/app/(marketing)/page.tsx
-import { fetchSanity } from "@/lib/sanity.client";
-import {
-  qHero,
-  qAllProduk,
-  qLatestBerita,
-  qAllSertifikasi,
-  qPageBySlug,
-} from "@/lib/sanity.queries";
-import { Hero } from "@/components/sections/hero";
-import { ProductShowcase } from "@/components/sections/product-showcase";
-import type { Product } from "@/components/sections/product-showcase";
-import { Features } from "@/components/sections/features";
-import { Certifications } from "@/components/sections/certifications";
-import { NewsSection } from "@/components/sections/news-section";
-import { CTA } from "@/components/sections/cta";
-import { PortableText } from "@portabletext/react";
-import type { PortableTextBlock } from "@portabletext/types";
-import { ScrollAnimationWrapper } from "@/components/scroll-animation-wrapper";
-import { SectionSeparator } from "@/components/section-separator";
-
-/** ===== Types (selaras dengan sanity.queries) ===== */
-type HeroData = {
-  headline: string;
-  subheadline?: string;
-  ctaText?: string;
-  ctaHref?: string;
-  bgUrls?: string[];
-  bgUrl?: string;
-};
-
-type Produk = {
-  _id: string;
-  nama: string;
-  deskripsi: string;
-  tipe: string;
-  ukuran: string;
-  fotoUrl?: string;
-  slug: string; // qAllProduk -> "slug": slug.current
-};
-
-type Slug = { current: string };
-
-type Article = {
-  _id: string;
-  title: string;
-  slug: Slug; // qLatestBerita -> slug masih object
-  excerpt?: string;
-  coverUrl?: string;
-  tags?: string[];
-  date?: string;
-};
-
-type Cert = {
-  _id: string;
-  nama: string;
-  nomor?: string;
-  lembaga?: string;
-  berlakuSampai?: string;
-  fileUrl?: string;
-};
-
-type Tentang = {
-  title: string;
-  body: PortableTextBlock[];
-  slug: string; // qPageBySlug -> "slug": slug.current
-};
-
-export default async function HomePage() {
-  const [hero, produk, berita, sertifikasi, tentang] = await Promise.all([
-    fetchSanity<HeroData | null>(qHero),
-    fetchSanity<Produk[]>(qAllProduk),
-    fetchSanity<Article[]>(qLatestBerita),
-    fetchSanity<Cert[]>(qAllSertifikasi),
-    fetchSanity<Tentang | null>(qPageBySlug, { slug: "tentang" }),
-  ]);
-
+export default function ComingSoonPage() {
   return (
-    <main className="overflow-hidden">
-      {/* 1. Hero Section - Dark gradient background */}
-      <ScrollAnimationWrapper>
-        {hero && <Hero {...hero} />}
-      </ScrollAnimationWrapper>
+    <main className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-slate-950 px-6 py-16 text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(35,181,91,0.3),_transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom,_rgba(12,90,47,0.35),_transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen">
+        <div
+          className="h-full w-full animate-pulse"
+          style={{
+            animationDuration: "9s",
+            backgroundImage:
+              "radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)",
+            backgroundSize: "120px 120px",
+            filter: "blur(0.5px)",
+          }}
+        />
+      </div>
 
-      {/* Separator 1: Light zigzag after dark hero */}
-      <SectionSeparator variant="zigzag" color="gray" height="md" />
-
-      {/* 2. Tentang Kami Section - Light gradient background */}
-      {tentang && (
-        <ScrollAnimationWrapper>
-          <section className="py-24 bg-gradient-to-br from-white via-gray-50 to-green-50 relative">
-            {/* Background Elements */}
-            <div className="absolute top-0 left-0 w-96 h-96 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse" />
-            <div className="absolute bottom-0 right-0 w-80 h-80 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000" />
-
-            <div className="container max-w-6xl mx-auto relative z-10">
-              <div className="text-center mb-16">
-                <div className="inline-block px-6 py-3 bg-gradient-to-r from-green-100 to-blue-100 text-green-700 rounded-full text-sm font-semibold mb-6 shadow-sm">
-                  Tentang Kami
-                </div>
-                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
-                  {tentang.title}
-                </h2>
-                <div className="prose prose-xl mx-auto text-gray-700 max-w-4xl text-justify">
-                  <PortableText value={tentang.body} />
-                </div>
-              </div>
-
-              {/* Additional Info Cards */}
-              <div className="grid md:grid-cols-3 gap-8 mt-16">
-                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🏆</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Kualitas Premium</h3>
-                  <p className="text-gray-600">Standar internasional dengan sertifikasi lengkap</p>
-                </div>
-
-                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">🌍</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Jangkauan Global</h3>
-                  <p className="text-gray-600">Melayani 15+ negara di seluruh dunia</p>
-                </div>
-
-                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">💪</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Produk Berkualitas</h3>
-                  <p className="text-gray-600">Kualitas terbukti</p>
-                </div>
-              </div>
-            </div>
-          </section>
-        </ScrollAnimationWrapper>
-      )}
-
-      {/* Separator 2: Green zigzag transition to stats */}
-      <SectionSeparator variant="zigzag" color="green" height="lg" />
-
-      {/* 5. Features Section - Zinc background */}
-      <ScrollAnimationWrapper>
-        <Features />
-      </ScrollAnimationWrapper>
-
-      {/* Separator 5: Green zigzag leading to products */}
-      <SectionSeparator variant="zigzag" color="green" height="md" />
-
-      {/* 6. Product Showcase - mapping Produk → Product */}
-      {produk?.length > 0 && (
-        <ScrollAnimationWrapper>
-          <ProductShowcase
-            products={produk.slice(0, 6).map((p): Product => ({
-              _id: p._id,
-              title: p.nama,
-              description: p.deskripsi,
-              // category: p.tipe,                 // opsional
-              // features: [],                     // opsional
-              // specifications: {},               // opsional
-              slug: { current: p.slug },          // bungkus string → { current }
-            }))}
-          />
-        </ScrollAnimationWrapper>
-      )}
-
-      {/* Separator 6: Blue zigzag for tech transition */}
-      <SectionSeparator variant="zigzag" color="blue" height="lg" />
-
-      {/* 7. Certifications - Brand colored background */}
-      {sertifikasi?.length > 0 && (
-        <ScrollAnimationWrapper>
-          <Certifications items={sertifikasi} />
-        </ScrollAnimationWrapper>
-      )}
-
-      {/* Separator 7: Gray zigzag for neutral transition */}
-      <SectionSeparator variant="zigzag" color="gray" height="md" />
-
-      {/* 8. Latest News - Light background */}
-      {berita?.length > 0 && (
-        <ScrollAnimationWrapper>
-          <NewsSection articles={berita.slice(0, 3)} />
-        </ScrollAnimationWrapper>
-      )}
-
-      {/* Separator 8: Gradient zigzag for final CTA buildup */}
-      <SectionSeparator variant="zigzag" color="gradient" height="lg" />
-
-      {/* 9. CTA Section - Dark gradient background */}
-      <ScrollAnimationWrapper>
-        <CTA />
-      </ScrollAnimationWrapper>
+      <div className="relative z-10 w-full max-w-2xl space-y-6 text-center">
+        <div className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-brand-100">
+          Website baru segera hadir
+        </div>
+        <p className="text-sm uppercase tracking-[0.6em] text-white/60">Halo dari</p>
+        <h1 className="text-4xl font-semibold leading-tight md:text-5xl">
+          <span className="block bg-gradient-to-r from-brand-200 via-white to-brand-200 bg-clip-text text-transparent">
+            TUNAS ESTA INDONESIA
+          </span>
+        </h1>
+        <p className="text-base text-white/70 md:text-lg">
+          Kami sedang memoles tampilan baru. Terima kasih sudah singgah dan tetap nantikan kabar
+          resmi peluncurannya.
+        </p>
+      </div>
     </main>
   );
 }
