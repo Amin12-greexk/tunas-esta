@@ -16,9 +16,9 @@ import { Menu, Phone, ChevronDown, X } from "lucide-react";
 
 export type NavItem = {
   title: string;
-  href: string;
+  href?: string;
   description?: string;
-  submenu?: { title: string; href: string; description?: string }[];
+  submenu?: { title: string; href?: string; description?: string }[];
 };
 
 type SiteHeaderProps = {
@@ -46,61 +46,16 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
     };
   }, [hoverTimeout]);
 
-  const FALLBACK: NavItem[] = [
-    {
-      title: "Tentang",
-      href: "/tentang",
-      description: "Profil perusahaan & sejarah TUNAS ESTA INDONESIA.",
-      submenu: [
-        {
-          title: "Apa itu Sarang Burung Walet",
-          href: "/tentang/apa-itu-sarang-burung-walet",
-          description: "Informasi lengkap tentang sarang burung walet dan manfaatnya",
-        },
-        {
-          title: "Profil Perusahaan",
-          href: "/tentang",
-          description: "Sejarah dan visi misi TUNAS ESTA INDONESIA",
-        },
-        {
-          title: "Visi & Misi",
-          href: "/tentang/visi-misi",
-          description: "Visi, misi, dan nilai-nilai perusahaan kami",
-        },
-      ],
-    },
-    { title: "Produk", href: "/produk", description: "Kategori & ukuran sarang walet." },
-    { title: "Fasilitas", href: "/fasilitas", description: "Pabrik & kapasitas produksi." },
-    { title: "Sertifikasi", href: "/sertifikasi", description: "HACCP, Halal, BPOM, ISO 22000." },
-    { title: "Berita", href: "/berita", description: "Informasi & update terbaru." },
-    { title: "Karier", href: "/karier", description: "Lowongan pekerjaan & kesempatan bergabung." },
-    { title: "Galeri", href: "/galeri", description: "Dokumentasi kegiatan & produk." },
-  ];
-
-  const injectTentangSubmenu = (items: NavItem[]): NavItem[] => {
-    const fallbackTentang = FALLBACK.find(i => i.title === "Tentang");
-    if (!fallbackTentang?.submenu?.length) return items;
-
-    return items.map(i => {
-      if (i.title !== "Tentang") return i;
-      if (!i.submenu || i.submenu.length === 0) {
-        return {
-          ...i,
-          description: i.description ?? fallbackTentang.description,
-          submenu: fallbackTentang.submenu,
-        };
-      }
-      return i;
-    });
-  };
-
-  const NAV: NavItem[] = useMemo(() => {
-    if (!navItems.length) return FALLBACK;
-    const hasTentang = navItems.some(i => i.title === "Tentang");
-    return hasTentang
-      ? injectTentangSubmenu(navItems)
-      : [...navItems, FALLBACK.find(i => i.title === "Tentang")!];
-  }, [navItems]);
+  const NAV: NavItem[] = useMemo(
+    () =>
+      (navItems ?? []).filter(item => {
+        if (!item?.title) return false;
+        const title = item.title.toLowerCase();
+        if (title === "kontak" || title === "contact") return false;
+        return !!(item.href || item.submenu?.length);
+      }),
+    [navItems],
+  );
 
   const titleParts = siteTitle.split(" ");
   const firstLine = titleParts.slice(0, 2).join(" ");
@@ -155,7 +110,7 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
           : "shadow-sm border-gray-100/50"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center gap-6">
         {/* Brand */}
         <Link
           href="/"
@@ -201,12 +156,17 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
           </div>
         </Link>
 
-        {/* Desktop Nav + CTA */}
-        <div className="hidden lg:flex items-center gap-2 ml-auto">
+        {/* Centered desktop navigation */}
+        <div className="hidden lg:flex flex-1 items-center justify-center">
           <nav aria-label="Navigasi utama">
             <div className="flex items-center gap-0.5">
               {NAV.map(item => {
-                const hasSub = !!item.submenu?.length;
+                const submenuItems = (item.submenu ?? []).flatMap(sub =>
+                  sub.title && sub.href
+                    ? [{ title: sub.title, href: sub.href, description: sub.description }]
+                    : [],
+                );
+                const hasSub = submenuItems.length > 0;
                 return (
                   <div
                     key={item.href || item.title}
@@ -230,7 +190,7 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
                         />
                         <div className="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/10 to-green-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                       </button>
-                    ) : (
+                    ) : item.href ? (
                       <Link
                         href={item.href}
                         className="px-4 py-2.5 rounded-xl transition-all duration-300 hover:bg-gradient-to-br hover:from-green-50 hover:to-emerald-50 text-gray-700 hover:text-green-700 font-medium text-sm inline-flex items-center gap-1.5 relative overflow-hidden group"
@@ -238,7 +198,7 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
                         <span className="relative z-10">{item.title}</span>
                         <div className="absolute inset-0 bg-gradient-to-r from-green-400/0 via-green-400/10 to-green-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                       </Link>
-                    )}
+                    ) : null}
 
                     {/* Dropdown */}
                     {activeDropdown === item.title && hasSub && (
@@ -259,7 +219,7 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
                         </div>
 
                         <div className="space-y-1">
-                          {item.submenu!.map(sub => (
+                          {submenuItems.map(sub => (
                             <Link
                               key={sub.href}
                               href={sub.href}
@@ -287,15 +247,16 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
               })}
             </div>
           </nav>
-
-          <Link
-            href="/kontak"
-            className="ml-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold text-sm transition-all duration-500 hover:shadow-xl hover:shadow-green-500/30 whitespace-nowrap relative overflow-hidden group"
-          >
-            <span className="relative z-10">Hubungi Kami</span>
-            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-          </Link>
         </div>
+
+        {/* Desktop CTA */}
+        <Link
+          href="/kontak"
+          className="hidden lg:inline-flex px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold text-sm transition-all duration-500 hover:shadow-xl hover:shadow-green-500/30 whitespace-nowrap relative overflow-hidden group"
+        >
+          <span className="relative z-10">Contact</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+        </Link>
 
         {/* Mobile */}
         <div className="lg:hidden ml-auto">
@@ -362,27 +323,41 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
               <div className="flex-1 overflow-y-auto">
                 <nav className="p-4 space-y-1.5">
                   {NAV.map(item => {
-                    const hasSub = !!item.submenu?.length;
+                    const submenuItems = (item.submenu ?? []).flatMap(sub =>
+                      sub.title && sub.href
+                        ? [{ title: sub.title, href: sub.href, description: sub.description }]
+                        : [],
+                    );
+                    const hasSub = submenuItems.length > 0;
                     const isExpanded = expandedMobileItem === item.title;
                     
                     return (
                       <div key={item.href || item.title} className="space-y-1.5">
                         <div className="relative overflow-hidden rounded-xl bg-white shadow-sm border border-gray-100/50 hover:border-green-200/50 transition-all duration-300 group">
                           <div className="flex items-center">
-                            <Link
-                              href={item.href}
-                              onClick={() => !hasSub && setOpen(false)}
-                              className="flex-1 p-4 hover:bg-gradient-to-br hover:from-green-50/50 hover:to-emerald-50/50 transition-all duration-300"
-                            >
-                              <h3 className="font-semibold text-gray-900 group-hover:text-green-700 transition-colors duration-300 text-base">
-                                {item.title}
-                              </h3>
-                              {item.description && (
-                                <p className="text-xs text-gray-600 group-hover:text-gray-700 mt-1 leading-relaxed">
-                                  {item.description}
-                                </p>
-                              )}
-                            </Link>
+                            {item.href ? (
+                              <Link
+                                href={item.href}
+                                onClick={() => !hasSub && setOpen(false)}
+                                className="flex-1 p-4 hover:bg-gradient-to-br hover:from-green-50/50 hover:to-emerald-50/50 transition-all duration-300"
+                              >
+                                <h3 className="font-semibold text-gray-900 group-hover:text-green-700 transition-colors duration-300 text-base">
+                                  {item.title}
+                                </h3>
+                                {item.description && (
+                                  <p className="text-xs text-gray-600 group-hover:text-gray-700 mt-1 leading-relaxed">
+                                    {item.description}
+                                  </p>
+                                )}
+                              </Link>
+                            ) : (
+                              <div className="flex-1 p-4">
+                                <h3 className="font-semibold text-gray-900 text-base">{item.title}</h3>
+                                {item.description && (
+                                  <p className="text-xs text-gray-600 mt-1 leading-relaxed">{item.description}</p>
+                                )}
+                              </div>
+                            )}
                             
                             {hasSub && (
                               <button
@@ -409,7 +384,7 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
                               isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                             }`}
                           >
-                            {item.submenu!.map(sub => (
+                            {submenuItems.map(sub => (
                               <Link
                                 key={sub.href}
                                 href={sub.href}
@@ -444,7 +419,7 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
                     className="flex items-center justify-center w-full px-5 py-4 rounded-xl bg-gradient-to-r from-green-600 via-emerald-600 to-green-700 hover:from-green-700 hover:via-emerald-700 hover:to-green-800 text-white font-semibold transition-all duration-500 shadow-lg hover:shadow-xl hover:shadow-green-500/40 gap-2.5 relative overflow-hidden group"
                   >
                     <Phone className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-300" />
-                    <span className="relative z-10">Hubungi Kami</span>
+                    <span className="relative z-10">Contact</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   </Link>
                 </div>

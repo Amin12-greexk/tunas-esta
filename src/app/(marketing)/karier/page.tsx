@@ -25,6 +25,7 @@ type Job = {
 
 export default function KarierPage() {
   const [lowongan, setLowongan] = useState<Job[] | null>(null);
+  const [activeDept, setActiveDept] = useState("All Departments");
 
   useEffect(() => {
     async function getLowongan() {
@@ -135,34 +136,44 @@ export default function KarierPage() {
             </div>
 
             <div className="flex flex-wrap gap-4 justify-center mb-12">
-              {["All Departments", "Production", "Quality Control", "Sales & Marketing", "Administration"].map((dept) => (
-                <button
-                  key={dept}
-                  className={`px-6 py-2 rounded-full font-medium transition-all ${
-                    dept === "All Departments"
-                      ? "bg-brand-600 text-white shadow-lg"
-                      : "bg-zinc-100 text-zinc-700 hover:bg-brand-50 hover:text-brand-600"
-                  }`}
-                >
-                  {dept}
-                </button>
-              ))}
+              {["All Departments", "Production", "Quality Control", "Sales & Marketing", "Administration"].map((dept) => {
+                const isActive = activeDept === dept;
+                return (
+                  <button
+                    key={dept}
+                    onClick={() => setActiveDept(dept)}
+                    className={`px-6 py-2 rounded-full font-medium transition-all ${
+                      isActive
+                        ? "bg-brand-600 text-white shadow-lg"
+                        : "bg-zinc-100 text-zinc-700 hover:bg-brand-50 hover:text-brand-600"
+                    }`}
+                    aria-pressed={isActive}
+                  >
+                    {dept}
+                  </button>
+                );
+              })}
             </div>
 
             {lowongan === null ? (
               <div className="text-center py-20">Memuat lowongan...</div>
             ) : lowongan.length > 0 ? (
               <div className="max-w-4xl mx-auto space-y-4">
-                {lowongan.map((job, index) => (
-                  <JobCard
-                    key={job._id ?? index}
-                    posisi={job.posisi}
-                    slug={job.slug}
-                    lokasi={job.lokasi}
-                    tipe={job.tipe}
-                    department={job.department}
-                  />
-                ))}
+                {lowongan
+                  .filter(job => {
+                    if (activeDept === "All Departments") return true;
+                    return job.department?.toLowerCase() === activeDept.toLowerCase();
+                  })
+                  .map((job, index) => (
+                    <JobCard
+                      key={job._id ?? index}
+                      posisi={job.posisi}
+                      slug={job.slug}
+                      lokasi={job.lokasi}
+                      tipe={job.tipe}
+                      department={job.department}
+                    />
+                  ))}
               </div>
             ) : (
               <div className="text-center py-20">

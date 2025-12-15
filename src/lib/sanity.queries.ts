@@ -105,6 +105,7 @@ export const qAllKarier = groq`*[_type=="karier"] | order(_createdAt desc){
   slug,
   lokasi,
   tipe,
+  department,
   deskripsi,
   kualifikasi,
   emailTujuan
@@ -115,6 +116,7 @@ export const qKarierBySlug = groq`*[_type=="karier" && slug.current==$slug][0]{
   slug,
   lokasi,
   tipe,
+  department,
   deskripsi,
   kualifikasi,
   emailTujuan

@@ -1,374 +1,317 @@
-"use client";
+import Image from "next/image";
+import Link from "next/link";
+import { PortableText } from "@portabletext/react";
+import type { PortableTextBlock } from "@portabletext/types";
+import { ArrowRight, CheckCircle2, Mail, Phone, Sparkles } from "lucide-react";
 
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
-import {
-  Award, Globe, Shield, TrendingUp, Target,
-  ArrowRight, Play, MapPin, Phone, Mail,
-  Building, Handshake, Factory
-} from "lucide-react";
+import { fetchSanity } from "@/lib/sanity.client";
+import { qPageBySlug, qSettings, qTentang } from "@/lib/sanity.queries";
 
-export default function TentangPage() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+type TentangStructured = {
+  title?: string;
+  heroUrl?: string;
+  overview?: PortableTextBlock[];
+  milestones?: {
+    year?: string;
+    title?: string;
+    description?: string;
+  }[];
+  values?: {
+    title?: string;
+    description?: string;
+    icon?: string;
+  }[];
+};
 
-  const [isVisible, setIsVisible] = useState(false);
-  const [counters, setCounters] = useState({
-    experience: 0,
-    countries: 0,
-    employees: 0,
-    capacity: 0
-  });
+type PageContent = {
+  title?: string;
+  body?: PortableTextBlock[];
+  slug?: string;
+};
 
-  // Memoize final values so reference stays stable and can be used as a dependency safely
-  const finalValues = useMemo(
-    () => ({
-      experience: 25,
-      countries: 15,
-      employees: 200,
-      capacity: 500
-    }),
-    []
-  );
+type Settings = {
+  siteTitle?: string;
+  logoUrl?: string;
+  socials?: {
+    instagram?: string;
+    linkedin?: string;
+    whatsapp?: string;
+    email?: string;
+    phone?: string;
+  };
+};
 
-  const animateCounters = useCallback(() => {
-    const duration = 2000; // ms
-    const steps = 60;
-    const stepDuration = duration / steps;
+function blocksToPlainText(blocks?: PortableTextBlock[], limit = 220) {
+  if (!blocks?.length) return "";
+  const text = blocks
+    .map(block => {
+      if (block._type !== "block" || !("children" in block)) return "";
+      return (block.children as { text?: string }[])
+        .map(child => child?.text ?? "")
+        .join("");
+    })
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-    let currentStep = 0;
+  if (!text) return "";
+  return text.length > limit ? `${text.slice(0, limit).trimEnd()}...` : text;
+}
 
-    // Bersihkan interval lama jika ada (jaga-jaga)
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
+type HeroProps = {
+  title: string;
+  subtitle?: string;
+  heroUrl?: string;
+  siteTitle: string;
+};
 
-    intervalRef.current = setInterval(() => {
-      currentStep++;
-      const progress = currentStep / steps;
-
-      setCounters({
-        experience: Math.floor(finalValues.experience * progress),
-        countries: Math.floor(finalValues.countries * progress),
-        employees: Math.floor(finalValues.employees * progress),
-        capacity: Math.floor(finalValues.capacity * progress)
-      });
-
-      if (currentStep >= steps && intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-        setCounters(finalValues);
-      }
-    }, stepDuration);
-  }, [finalValues]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          // Hindari trigger berulang saat user scroll naik-turun
-          setIsVisible((prev) => {
-            if (!prev) {
-              animateCounters();
-            }
-            return true;
-          });
-          // Unobserve setelah pertama kali terlihat agar tidak retrigger
-          if (sectionRef.current) observer.unobserve(sectionRef.current);
-        }
-      },
-      { threshold: 0.2 }
-    );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
-    return () => {
-      observer.disconnect();
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [animateCounters]);
-
-  const stats = [
-    { value: counters.experience, unit: "+", label: "Tahun Pengalaman", description: "Sejak 1998" },
-    { value: counters.countries, unit: "+", label: "Negara Ekspor", description: "Global reach" },
-    { value: counters.employees, unit: "+", label: "Karyawan", description: "Tim profesional" },
-    { value: counters.capacity, unit: "+", label: "Ton/Tahun", description: "Kapasitas produksi" }
-  ];
-
-  const timeline = [
-    { year: "1998", title: "Pendirian Perusahaan", description: "Dimulai dengan visi menghadirkan sarang walet premium", icon: Building },
-    { year: "2005", title: "Ekspansi Regional", description: "Memasuki pasar Malaysia dan Singapura", icon: Globe },
-    { year: "2010", title: "Sertifikasi Pertama", description: "Meraih sertifikasi HACCP dan Halal MUI", icon: Award },
-    { year: "2015", title: "Fasilitas Modern", description: "Pembangunan pabrik dengan teknologi terdepan", icon: Factory },
-    { year: "2020", title: "Ekspansi Global", description: "Memasuki pasar Eropa dan Amerika", icon: Handshake },
-    { year: "2024", title: "ISO 22000:2018", description: "Pencapaian sertifikasi ISO terbaru", icon: Shield }
-  ];
-
-  const values = [
-    {
-      icon: Target,
-      title: "Visi",
-      subtitle: "Menjadi Pemimpin Global",
-      description: "Menjadi perusahaan sarang walet terdepan di dunia yang dikenal karena kualitas, inovasi, dan komitmen terhadap keberlanjutan untuk kesehatan masyarakat global."
-    },
-    {
-      icon: Target,
-      title: "Misi",
-      subtitle: "Menghadirkan Kualitas Premium",
-      description: "Menghadirkan produk sarang walet premium dengan standar internasional tertinggi, membangun kemitraan berkelanjutan, dan berkontribusi pada kesehatan masyarakat."
-    },
-    {
-      icon: Shield,
-      title: "Nilai",
-      subtitle: "Fondasi Keunggulan",
-      description: "Integritas, kualitas tanpa kompromi, inovasi berkelanjutan, tanggung jawab lingkungan, dan kemitraan jangka panjang yang saling menguntungkan."
-    }
-  ];
-
-  const achievements = [
-    { icon: Award, title: "Sertifikasi Internasional", value: "4+", description: "HACCP, ISO 22000, Halal MUI, BPOM" },
-    { icon: Globe, title: "Jangkauan Global", value: "15+", description: "Negara di Asia, Eropa, dan Amerika" },
-    { icon: Factory, title: "Fasilitas Modern", value: "5,000", description: "m² dengan teknologi terdepan" },
-    { icon: TrendingUp, title: "Pertumbuhan Konsisten", value: "25%", description: "YoY growth rate selama 5 tahun" }
-  ];
-
+function HeroSection({ title, subtitle, heroUrl, siteTitle }: HeroProps) {
   return (
-    <main className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-green-900 via-green-800 to-blue-900 overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute top-0 left-0 w-full h-full"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Ccircle cx='30' cy='30' r='1'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            }}
-          />
+    <section className="relative overflow-hidden bg-gradient-to-br from-zinc-900 via-emerald-900 to-black text-white">
+      {heroUrl && (
+        <Image
+          src={heroUrl}
+          alt={siteTitle}
+          fill
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
+          priority
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-emerald-950/70 to-black/80" />
+      <div className="relative z-10 container mx-auto max-w-6xl px-4 py-24 text-center">
+        <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold uppercase tracking-[0.15em]">
+          <Sparkles className="h-4 w-4 text-emerald-200" />
+          Profil Perusahaan
         </div>
-
-        {/* Floating Elements */}
-        <div className="absolute top-20 left-20 w-32 h-32 bg-green-400/20 rounded-full blur-xl animate-pulse" />
-        <div className="absolute bottom-20 right-20 w-48 h-48 bg-blue-400/20 rounded-full blur-xl animate-pulse delay-1000" />
-        <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/10 rounded-full blur-xl animate-pulse delay-500" />
-
-        <div className="container relative z-10 text-center text-white">
-          <div className="max-w-4xl mx-auto">
-            <div className="inline-block px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 text-green-300 rounded-full text-sm font-semibold mb-8">
-              Tentang TUNAS ESTA INDONESIA
-            </div>
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              Produsen
-              <span className="block bg-gradient-to-r from-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Sarang Walet Indonesia
-              </span>
-            </h1>
-
-            <p className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed max-w-3xl mx-auto">
-              inovasi berkelanjutan, dan komitmen terhadap keunggulan
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <button className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 flex items-center justify-center gap-2">
-                <Play className="w-5 h-5" />
-                <span>Tonton Video Profil</span>
-              </button>
-              <button className="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold rounded-xl transition-all duration-300">
-                Download Company Profile
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white rounded-full mt-2 animate-pulse" />
-          </div>
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section ref={sectionRef} className="py-20 bg-white relative overflow-hidden">
-        <div className="container">
-          <div
-            className={`grid md:grid-cols-2 lg:grid-cols-4 gap-8 transition-all duration-1000 ${
-              isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-            }`}
+        <h1 className="text-4xl font-bold leading-tight md:text-6xl">
+          <span className="bg-gradient-to-r from-white via-emerald-200 to-white bg-clip-text text-transparent">
+            {title}
+          </span>
+        </h1>
+        {subtitle && (
+          <p className="mx-auto mt-6 max-w-3xl text-lg text-emerald-100 md:text-xl">
+            {subtitle}
+          </p>
+        )}
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <Link
+            href="/kontak"
+            className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition hover:-translate-y-0.5 hover:bg-emerald-700"
           >
-            {stats.map((stat, index) => (
-              <div
-                key={stat.label ?? index}
-                className="text-center bg-gradient-to-br from-green-50 to-blue-50 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all hover:-translate-y-2"
-                style={{
-                  transitionDelay: `${index * 150}ms`,
-                  transitionDuration: "300ms",
-                  willChange: "transform, box-shadow",
-                }}
-              >
-                <div className="text-5xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
-                  {stat.value}
-                  {stat.unit}
-                </div>
-                <div className="text-lg font-semibold text-gray-800 mb-1">{stat.label}</div>
-                <div className="text-sm text-gray-600">{stat.description}</div>
-              </div>
-            ))}
-          </div>
+            Hubungi Kami
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href="/produk"
+            className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:border-emerald-200 hover:text-emerald-100"
+          >
+            Lihat Produk
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* Visi Misi Values */}
-      <section className="py-24 bg-gradient-to-br from-gray-50 to-green-50">
-        <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Visi, Misi & Nilai Kami
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Fondasi yang menguatkan setiap langkah perjalanan kami menuju keunggulan global
-            </p>
-          </div>
+type OverviewSectionProps = {
+  blocks: PortableTextBlock[];
+};
 
-          <div className="grid lg:grid-cols-3 gap-8">
-            {values.map((value, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <value.icon className="w-8 h-8 text-white" />
-                </div>
-
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">{value.title}</h3>
-                <p className="text-lg font-semibold text-green-600 mb-4">{value.subtitle}</p>
-                <p className="text-gray-600 leading-relaxed">{value.description}</p>
-              </div>
-            ))}
-          </div>
+function OverviewSection({ blocks }: OverviewSectionProps) {
+  return (
+    <section className="bg-white py-16">
+      <div className="container mx-auto max-w-5xl px-4">
+        <div className="mb-8 text-center">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
+            Tentang Perusahaan
+          </p>
+          <h2 className="text-3xl font-bold text-zinc-900 md:text-4xl">Cerita Kami</h2>
         </div>
-      </section>
-
-      {/* Timeline Section */}
-      <section className="py-24 bg-white">
-        <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Perjalanan Kami
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Sejarah pencapaian dan milestone penting dalam membangun kepercayaan global
-            </p>
+        {blocks.length ? (
+          <div className="prose prose-lg max-w-none text-justify text-zinc-700 prose-headings:text-zinc-900 prose-a:text-emerald-700">
+            <PortableText value={blocks} />
           </div>
+        ) : (
+          <div className="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/50 p-6 text-center text-sm text-emerald-700">
+            Belum ada konten &quot;Tentang Kami&quot; di Sanity. Tambahkan melalui dokumen <strong>page</strong> (slug <code>tentang</code>) atau <strong>tentang</strong>.
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
 
-          <div className="max-w-5xl mx-auto">
-            <div className="relative">
-              {/* Timeline Line */}
-              <div className="absolute left-1/2 -translate-x-1/2 w-1 h-full bg-gradient-to-b from-green-500 to-blue-500 rounded-full" />
+type ValueItem = { title?: string; description?: string; icon?: string };
 
-              {timeline.map((item, index) => (
+function ValuesSection({ values }: { values: ValueItem[] }) {
+  return (
+    <section className="bg-gradient-to-br from-emerald-50 via-white to-emerald-50 py-20">
+      <div className="container mx-auto max-w-6xl px-4">
+        <div className="mb-12 text-center">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">
+            Nilai & Komitmen
+          </p>
+          <h2 className="text-3xl font-bold text-zinc-900 md:text-4xl">Budaya yang Kami Junjung</h2>
+          <p className="mt-3 text-zinc-600">Semua nilai diambil dari Sanity sehingga mudah diperbarui tanpa deploy ulang.</p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {values.map((value, idx) => (
+            <div
+              key={`${value.title ?? "value"}-${idx}`}
+              className="group rounded-2xl border border-emerald-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+            >
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                {value.icon ? (
+                  <span className="text-sm font-semibold uppercase tracking-wide">{value.icon}</span>
+                ) : (
+                  <CheckCircle2 className="h-6 w-6" />
+                )}
+              </div>
+              <h3 className="text-xl font-semibold text-zinc-900">{value.title ?? "Tanpa judul"}</h3>
+              {value.description && <p className="mt-2 text-sm text-zinc-600 leading-relaxed">{value.description}</p>}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+type Milestone = { year?: string; title?: string; description?: string };
+
+function MilestonesSection({ milestones }: { milestones: Milestone[] }) {
+  return (
+    <section className="bg-white py-20">
+      <div className="container mx-auto max-w-5xl px-4">
+        <div className="mb-12 text-center">
+          <p className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">Milestone</p>
+          <h2 className="text-3xl font-bold text-zinc-900 md:text-4xl">Perjalanan Kami</h2>
+        </div>
+        <div className="relative">
+          <div className="absolute left-4 top-0 h-full w-px bg-gradient-to-b from-emerald-500/50 via-emerald-500/40 to-transparent md:left-1/2" />
+          <div className="space-y-8">
+            {milestones.map((item, idx) => {
+              const isEven = idx % 2 === 0;
+              return (
                 <div
-                  key={index}
-                  className={`relative flex items-center mb-12 ${
-                    index % 2 === 0 ? "flex-row" : "flex-row-reverse"
-                  }`}
+                  key={`${item.title ?? "milestone"}-${idx}`}
+                  className={`relative flex flex-col gap-4 ${isEven ? "md:flex-row" : "md:flex-row-reverse"}`}
                 >
-                  {/* Content */}
-                  <div className={`w-5/12 ${index % 2 === 0 ? "text-right pr-8" : "text-left pl-8"}`}>
-                    <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                      <div className="text-2xl font-bold text-green-600 mb-2">{item.year}</div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
-                      <p className="text-gray-600 leading-relaxed">{item.description}</p>
+                  <div className="md:w-1/2">
+                    <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-6 shadow-sm">
+                      <p className="text-sm font-semibold text-emerald-700">{item.year ?? "Tahun tidak diisi"}</p>
+                      <h3 className="text-xl font-bold text-zinc-900">{item.title ?? "Tanpa judul"}</h3>
+                      {item.description && <p className="mt-2 text-sm text-zinc-600 leading-relaxed">{item.description}</p>}
                     </div>
                   </div>
-
-                  {/* Center Icon */}
-                  <div className="absolute left-1/2 -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                    <item.icon className="w-8 h-8 text-white" />
+                  <div className="md:w-1/2" />
+                  <div className="absolute left-4 top-6 h-10 w-10 -translate-x-1/2 rounded-full border-2 border-white bg-gradient-to-br from-emerald-500 to-emerald-600 text-center text-sm font-semibold text-white shadow-lg md:left-1/2 md:-translate-x-1/2">
+                    <div className="flex h-full items-center justify-center">{item.year?.slice(0, 4) ?? idx + 1}</div>
                   </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* Achievements Section */}
-      <section className="py-24 bg-gradient-to-br from-green-900 to-blue-900 text-white">
-        <div className="container">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Pencapaian Kami</h2>
-            <p className="text-xl text-green-100 max-w-3xl mx-auto">
-              Hasil kerja keras dan dedikasi tim dalam mencapai standar kualitas internasional
-            </p>
-          </div>
+type ContactProps = {
+  phone?: string;
+  email?: string;
+  siteTitle: string;
+};
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {achievements.map((achievement, index) => (
-              <div
-                key={index}
-                className="text-center bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20 hover:bg-white/15 transition-all duration-300 hover:-translate-y-2"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <achievement.icon className="w-8 h-8 text-white" />
-                </div>
-                <div className="text-3xl font-bold text-white mb-2">{achievement.value}</div>
-                <h3 className="text-lg font-semibold text-green-300 mb-3">{achievement.title}</h3>
-                <p className="text-sm text-gray-300">{achievement.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+function ContactSection({ phone, email, siteTitle }: ContactProps) {
+  const hasContact = !!(phone || email);
+  return (
+    <section className="bg-gradient-to-br from-emerald-900 via-emerald-800 to-zinc-900 py-20 text-white">
+      <div className="container mx-auto max-w-4xl px-4 text-center">
+        <h2 className="text-3xl font-bold md:text-4xl">Terhubung dengan {siteTitle}</h2>
+        <p className="mt-3 text-emerald-100">
+          Informasi kontak diambil dari pengaturan Sanity sehingga mudah diperbarui oleh tim.
+        </p>
 
-      {/* Contact CTA */}
-      <section className="py-24 bg-gradient-to-br from-green-50 to-white">
-        <div className="container">
-          <div className="max-w-4xl mx-auto bg-white rounded-3xl p-12 shadow-2xl border border-gray-100 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Siap Berkolaborasi dengan Kami?
-            </h2>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Bergabunglah dengan ratusan mitra global yang telah mempercayakan kebutuhan
-              sarang walet premium mereka kepada TUNAS ESTA INDONESIA
-            </p>
-
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl">
-                <Phone className="w-6 h-6 text-green-600" />
-                <div className="text-left">
-                  <div className="text-sm text-gray-600">Telepon</div>
-                  <div className="font-semibold text-gray-900">+62 21 XXX-XXXX</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl">
-                <Mail className="w-6 h-6 text-blue-600" />
-                <div className="text-left">
-                  <div className="text-sm text-gray-600">Email</div>
-                  <div className="font-semibold text-gray-900">info@tunasesta.com</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-xl">
-                <MapPin className="w-6 h-6 text-purple-600" />
-                <div className="text-left">
-                  <div className="text-sm text-gray-600">Lokasi</div>
-                  <div className="font-semibold text-gray-900">Jakarta, Indonesia</div>
-                </div>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          {phone && (
+            <div className="flex items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/5 p-4 backdrop-blur">
+              <Phone className="h-5 w-5" />
+              <div className="text-left">
+                <p className="text-xs uppercase tracking-[0.15em] text-emerald-100">Telepon/WA</p>
+                <p className="font-semibold text-white">{phone}</p>
               </div>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-8 py-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:scale-105 flex items-center justify-center gap-2">
-                <span>Hubungi Tim Kami</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <button className="px-8 py-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-all duration-300 hover:shadow-lg">
-                Download Company Profile
-              </button>
+          )}
+          {email && (
+            <div className="flex items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/5 p-4 backdrop-blur">
+              <Mail className="h-5 w-5" />
+              <div className="text-left">
+                <p className="text-xs uppercase tracking-[0.15em] text-emerald-100">Email</p>
+                <p className="font-semibold text-white">{email}</p>
+              </div>
             </div>
-          </div>
+          )}
         </div>
-      </section>
+
+        {!hasContact && (
+          <div className="mt-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-emerald-100">
+            Kontak belum diisi di Sanity &gt; Settings. Isi bidang phone/whatsapp/email agar tampil di sini.
+          </div>
+        )}
+
+        <div className="mt-10 flex justify-center gap-4">
+          <Link
+            href="/kontak"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-emerald-900 shadow-lg shadow-black/20 transition hover:-translate-y-0.5"
+          >
+            Buka Halaman Kontak
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          {email && (
+            <Link
+              href={`mailto:${email}`}
+              className="inline-flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5"
+            >
+              Kirim Email
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default async function TentangPage() {
+  const [structured, pageContent, settings] = await Promise.all([
+    fetchSanity<TentangStructured | null>(qTentang),
+    fetchSanity<PageContent | null>(qPageBySlug, { slug: "tentang" }),
+    fetchSanity<Settings | null>(qSettings),
+  ]);
+
+  const siteTitle = settings?.siteTitle ?? "TUNAS ESTA INDONESIA";
+  const heroTitle = structured?.title ?? pageContent?.title ?? "Tentang Kami";
+  const heroSubtitle = blocksToPlainText(structured?.overview ?? pageContent?.body);
+  const overviewBlocks =
+    (structured?.overview?.length ? structured.overview : undefined) ??
+    (pageContent?.body ?? []);
+
+  const milestones = structured?.milestones ?? [];
+  const values = structured?.values ?? [];
+
+  const contactPhone = settings?.socials?.phone || settings?.socials?.whatsapp;
+  const contactEmail = settings?.socials?.email;
+
+  return (
+    <main className="bg-white">
+      <HeroSection title={heroTitle} subtitle={heroSubtitle} heroUrl={structured?.heroUrl} siteTitle={siteTitle} />
+      <OverviewSection blocks={overviewBlocks} />
+      {values.length > 0 && <ValuesSection values={values} />}
+      {milestones.length > 0 && <MilestonesSection milestones={milestones} />}
+      <ContactSection phone={contactPhone} email={contactEmail} siteTitle={siteTitle} />
     </main>
   );
 }

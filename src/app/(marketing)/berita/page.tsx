@@ -1,7 +1,7 @@
 // src/app/(marketing)/berita/page.tsx
 import { fetchSanity } from "@/lib/sanity.client";
 import { qAllBerita } from "@/lib/sanity.queries";
-import { NewsCard } from "@/components/news-card";
+import { BeritaFilterGrid } from "@/components/berita-filter-grid";
 
 // Minimal type untuk items berita (samakan dengan field yang dikembalikan qAllBerita)
 type Slug = { current: string };
@@ -39,29 +39,8 @@ export default async function BeritaPage() {
       {/* News Grid */}
       <section className="py-16">
         <div className="container">
-          {/* Categories Filter */}
-          <div className="flex flex-wrap gap-4 justify-center mb-12">
-            {["All", "Company News", "Industry", "Export", "Certification", "Events"].map((category) => (
-              <button
-                key={category}
-                className={`px-6 py-2 rounded-full font-medium transition-all ${
-                  category === "All"
-                    ? "bg-brand-600 text-white shadow-lg"
-                    : "bg-white text-zinc-700 hover:bg-brand-50 hover:text-brand-600 border border-zinc-200"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-
-          {/* News Grid */}
           {berita?.length ? (
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {berita.map((item, index) => (
-                <NewsCard key={item._id ?? index} {...item} index={index} />
-              ))}
-            </div>
+            <BeritaFilterGrid items={berita} />
           ) : (
             <div className="text-center py-20">
               <div className="inline-flex items-center justify-center w-20 h-20 mb-6 bg-zinc-100 rounded-full">

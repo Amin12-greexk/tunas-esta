@@ -15,6 +15,7 @@ type Job = {
   slug: Slug;
   lokasi?: string;
   tipe?: string;
+  department?: string;
   deskripsi?: PortableTextBlock[];
   kualifikasi?: PortableTextBlock[];
   emailTujuan?: string;
@@ -38,6 +39,13 @@ export default async function KarierDetailPage({
   if (!job) {
     notFound();
   }
+
+  const productionFormUrl =
+    "https://docs.google.com/forms/d/1cIw64oUdJvFSw9as-MU5Q_NHZVDwmhygZ6knhdRAx4Q";
+  const isProductionRole =
+    job.posisi.toLowerCase().includes("produksi") ||
+    job.tipe?.toLowerCase().includes("produksi") ||
+    job.department?.toLowerCase() === "production";
 
   return (
     <main className="min-h-screen">
@@ -109,10 +117,26 @@ export default async function KarierDetailPage({
               {/* Application Form - Improved background contrast */}
               <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-8">
                 <h2 className="text-2xl font-bold text-zinc-900 mb-6">Apply for This Position</h2>
-                <JobApplicationForm
-                  jobTitle={job.posisi}
-                  emailTo={job.emailTujuan || "hr@tunasesta.co.id"}
-                />
+                {isProductionRole ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-zinc-700">
+                      Formulir pelamar untuk posisi Produksi diarahkan ke Google Form resmi.
+                    </p>
+                    <a
+                      href={productionFormUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-6 py-3 text-white font-semibold shadow-lg transition hover:bg-brand-700"
+                    >
+                      Buka Form Produksi
+                    </a>
+                  </div>
+                ) : (
+                  <JobApplicationForm
+                    jobTitle={job.posisi}
+                    emailTo={job.emailTujuan || "hr@tunasesta.co.id"}
+                  />
+                )}
               </div>
             </div>
 
