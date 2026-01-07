@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NewsCard } from "./news-card";
+import { useI18n } from "@/lib/i18n";
 
 type Article = {
   _id: string;
@@ -15,23 +16,34 @@ type Article = {
 
 type Category = { label: string; value: string };
 
-const CATEGORIES: Category[] = [
-  { label: "All", value: "all" },
-  { label: "Company News", value: "company news" },
-  { label: "Industry", value: "industry" },
-  { label: "Export", value: "export" },
-  { label: "Certification", value: "certification" },
-  { label: "Events", value: "events" },
-];
+function normalizeTag(input: string) {
+  return input.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
 
 function matchCategory(tags: string[] | undefined, category: string) {
   if (!tags?.length) return false;
-  const target = category.toLowerCase();
-  return tags.some(tag => tag?.toLowerCase().includes(target));
+  const target = normalizeTag(category);
+  return tags.some(tag => normalizeTag(tag).includes(target));
 }
 
 export function BeritaFilterGrid({ items }: { items: Article[] }) {
-  const [active, setActive] = useState<Category>(CATEGORIES[0]);
+  const { t } = useI18n();
+  const categories: Category[] = useMemo(
+    () => [
+      { label: t("news.filter.all", "Semua"), value: "all" },
+      { label: t("news.filter.company", "Berita Perusahaan"), value: "company news" },
+      { label: t("news.filter.industry", "Industri"), value: "industry" },
+      { label: t("news.filter.export", "Ekspor"), value: "export" },
+      { label: t("news.filter.certification", "Sertifikasi"), value: "certification" },
+      { label: t("news.filter.events", "Acara"), value: "events" },
+    ],
+    [t],
+  );
+  const [active, setActive] = useState<Category>(categories[0]);
+
+  useEffect(() => {
+    setActive(categories[0]);
+  }, [categories]);
 
   const filtered = useMemo(() => {
     if (active.value === "all") return items;
@@ -42,7 +54,7 @@ export function BeritaFilterGrid({ items }: { items: Article[] }) {
     <div className="space-y-12">
       {/* Categories Filter */}
       <div className="flex flex-wrap gap-3 justify-center">
-        {CATEGORIES.map(category => {
+        {categories.map(category => {
           const isActive = category.value === active.value;
           return (
             <button
@@ -76,8 +88,12 @@ export function BeritaFilterGrid({ items }: { items: Article[] }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-zinc-700">Belum ada berita untuk kategori ini</h3>
-          <p className="text-zinc-500 text-sm">Pilih kategori lain untuk melihat berita</p>
+          <h3 className="text-lg font-semibold text-zinc-700">
+            {t("news.filter.empty.title", "Belum ada berita untuk kategori ini")}
+          </h3>
+          <p className="text-zinc-500 text-sm">
+            {t("news.filter.empty.desc", "Pilih kategori lain untuk melihat berita")}
+          </p>
         </div>
       )}
     </div>

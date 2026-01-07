@@ -6,6 +6,8 @@ import { SiteHeader, type NavItem } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { fetchSanity } from "@/lib/sanity.client";
 import { qSettings, qNavigation } from "@/lib/sanity.queries";
+import { AppProviders } from "./providers";
+import { getServerLocale } from "@/lib/i18n-server";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
@@ -108,9 +110,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getServerLocale();
   const [settings, navigation] = await Promise.all([
-    fetchSanity<Settings>(qSettings),
-    fetchSanity<Navigation>(qNavigation),
+    fetchSanity<Settings>(qSettings, {}, 60, locale),
+    fetchSanity<Navigation>(qNavigation, {}, 60, locale),
   ]);
 
   const footerSocials = coerceFooterSocials(settings?.socials);
@@ -130,19 +133,21 @@ export default async function RootLayout({
       .filter(item => item.title && (item.href || item.submenu?.length)) ?? [];
 
   return (
-    <html lang="id">
+    <html lang={locale} suppressHydrationWarning>
       <body className="min-h-screen bg-white text-zinc-800 antialiased">
-        <SiteHeader
-          logoUrl={settings?.logoUrl}
-          siteTitle={settings?.siteTitle ?? "TUNAS ESTA INDONESIA"}
-          navItems={headerNavigation}
-        />
-        {children}
-        <SiteFooter
-          logoUrl={settings?.logoUrl}
-          siteTitle={settings?.siteTitle ?? "TUNAS ESTA INDONESIA"}
-          socials={footerSocials}
-        />
+        <AppProviders>
+          <SiteHeader
+            logoUrl={settings?.logoUrl}
+            siteTitle={settings?.siteTitle ?? "TUNAS ESTA INDONESIA"}
+            navItems={headerNavigation}
+          />
+          {children}
+          <SiteFooter
+            logoUrl={settings?.logoUrl}
+            siteTitle={settings?.siteTitle ?? "TUNAS ESTA INDONESIA"}
+            socials={footerSocials}
+          />
+        </AppProviders>
       </body>
     </html>
   );

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Clock, Send, MessageSquare, CheckCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 type ContactInfoItem = {
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
@@ -13,6 +14,7 @@ type ContactInfoItem = {
 };
 
 export default function KontakPage() {
+  const { t } = useI18n();
   const [formData, setFormData] = useState({
     nama: "",
     email: "",
@@ -28,23 +30,23 @@ export default function KontakPage() {
   const contactInfo: ContactInfoItem[] = [
     {
       icon: MapPin,
-      title: "Head Office",
+      title: t("contact.info.office", "Kantor Pusat"),
       details: ["Jl. Semarang - Kudus", "Demak, Jawa Tengah 59516", "Indonesia"],
     },
     {
       icon: Phone,
-      title: "Phone",
+      title: t("contact.info.phone", "Telepon"),
       details: ["+62 291 123456"],
     },
     {
       icon: Mail,
-      title: "Email",
+      title: t("contact.info.email", "Email"),
       details: ["info@tunasesta.co.id"],
     },
     {
       icon: Clock,
-      title: "Business Hours",
-      details: ["Monday - Friday: 08:00 - 17:00", "Saturday: 08:00 - 12:00", "Sunday: Closed"],
+      title: t("contact.info.hours", "Jam Operasional"),
+      details: ["Senin - Jumat: 08:00 - 17:00", "Sabtu: 08:00 - 12:00", "Minggu: Tutup"],
     },
   ];
 
@@ -58,8 +60,8 @@ export default function KontakPage() {
       await new Promise((r) => setTimeout(r, 1500));
       setIsSubmitted(true);
       toast({
-        title: "Message Sent!",
-        description: "We'll get back to you within 24 hours.",
+        title: t("contact.toast.success.title", "Pesan Berhasil Dikirim!"),
+        description: t("contact.toast.success.desc", "Kami akan membalas dalam 24 jam."),
       });
       setTimeout(() => {
         setFormData({
@@ -93,11 +95,14 @@ export default function KontakPage() {
           <div className="max-w-3xl mx-auto text-center text-white">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               <span className="inline-block px-4 py-2 mb-6 text-sm font-semibold bg-white/20 backdrop-blur-sm rounded-full">
-                Get In Touch
+                {t("contact.hero.badge", "Hubungi Kami")}
               </span>
-              <h1 className="text-5xl md:text-6xl font-bold mb-6">Contact Us</h1>
+              <h1 className="text-5xl md:text-6xl font-bold mb-6">{t("contact.hero.title", "Kontak")}</h1>
               <p className="text-lg md:text-xl text-brand-100">
-                Have questions about our products or services? We&rsquo;re here to help and would love to hear from you.
+                {t(
+                  "contact.hero.subtitle",
+                  "Punya pertanyaan seputar produk atau layanan kami? Kami siap membantu dan senang mendengarnya.",
+                )}
               </p>
             </motion.div>
           </div>
@@ -144,8 +149,13 @@ export default function KontakPage() {
             {/* Contact Form */}
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
               <div className="mb-8">
-                <h2 className="text-3xl font-bold text-zinc-900 mb-4">Send Us a Message</h2>
-                <p className="text-zinc-600">If you have any questions or business inquiries regarding our products/services, please contact us for details.</p>
+                <h2 className="text-3xl font-bold text-zinc-900 mb-4">{t("contact.form.title", "Kirim Pesan")}</h2>
+                <p className="text-zinc-600">
+                  {t(
+                    "contact.form.desc",
+                    "Untuk pertanyaan atau kerja sama bisnis terkait produk/layanan kami, silakan hubungi kami.",
+                  )}
+                </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6" noValidate>
@@ -155,7 +165,7 @@ export default function KontakPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
                     <label htmlFor="nama" className="block text-sm font-medium text-zinc-700 mb-2">
-                      Full Name *
+                      {t("contact.form.name", "Nama Lengkap *")}
                     </label>
                     <input
                       id="nama"
@@ -166,12 +176,12 @@ export default function KontakPage() {
                       required
                       autoComplete="name"
                       className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                      placeholder="John Doe"
+                      placeholder="Nama Anda"
                     />
                   </div>
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-zinc-700 mb-2">
-                      Email Address *
+                      {t("contact.form.email", "Alamat Email *")}
                     </label>
                     <input
                       id="email"
@@ -182,7 +192,7 @@ export default function KontakPage() {
                       required
                       autoComplete="email"
                       className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
-                      placeholder="john@example.com"
+                      placeholder="email@contoh.com"
                     />
                   </div>
                 </div>
@@ -190,7 +200,7 @@ export default function KontakPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-zinc-700 mb-2">
-                      Phone Number
+                      {t("contact.form.phone", "Nomor Telepon")}
                     </label>
                     <input
                       id="phone"
@@ -205,7 +215,7 @@ export default function KontakPage() {
                   </div>
                   <div>
                     <label htmlFor="subject" className="block text-sm font-medium text-zinc-700 mb-2">
-                      Subject *
+                      {t("contact.form.subject", "Subjek *")}
                     </label>
                     <select
                       id="subject"
@@ -215,19 +225,19 @@ export default function KontakPage() {
                       required
                       className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all"
                     >
-                      <option value="">Select Subject</option>
-                      <option value="product">Product Inquiry</option>
-                      <option value="export">Export/Import</option>
-                      <option value="partnership">Partnership</option>
-                      <option value="career">Career</option>
-                      <option value="other">Other</option>
+                      <option value="">{t("contact.form.subject.select", "Pilih Subjek")}</option>
+                      <option value="product">{t("contact.form.subject.product", "Produk")}</option>
+                      <option value="export">{t("contact.form.subject.export", "Ekspor/Impor")}</option>
+                      <option value="partnership">{t("contact.form.subject.partnership", "Kemitraan")}</option>
+                      <option value="career">{t("contact.form.subject.career", "Karier")}</option>
+                      <option value="other">{t("contact.form.subject.other", "Lainnya")}</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
                   <label htmlFor="pesan" className="block text-sm font-medium text-zinc-700 mb-2">
-                    Message *
+                    {t("contact.form.message", "Pesan *")}
                   </label>
                   <textarea
                     id="pesan"
@@ -237,7 +247,7 @@ export default function KontakPage() {
                     required
                     rows={6}
                     className="w-full px-4 py-3 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all resize-none"
-                    placeholder="Tell us how we can help you..."
+                    placeholder={t("contact.form.message.placeholder", "Beritahu kami bagaimana kami dapat membantu Anda...")}
                   />
                 </div>
 
@@ -252,17 +262,17 @@ export default function KontakPage() {
                   {isSubmitted ? (
                     <>
                       <CheckCircle className="w-5 h-5" />
-                      Message Sent Successfully!
+                      {t("contact.form.sent", "Pesan Berhasil Dikirim!")}
                     </>
                   ) : isSubmitting ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Sending...
+                      {t("contact.form.sending", "Mengirim...")}
                     </>
                   ) : (
                     <>
                       <Send className="w-5 h-5" />
-                      Send Message
+                      {t("contact.form.submit", "Kirim Pesan")}
                     </>
                   )}
                 </button>
@@ -283,7 +293,7 @@ export default function KontakPage() {
                   className="grayscale hover:grayscale-0 transition-all duration-300"
                 />
                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
-                  <span className="text-sm font-semibold text-zinc-800">📍 Demak Jawa Tengah</span>
+                  <span className="text-sm font-semibold text-zinc-800">Demak, Jawa Tengah</span>
                 </div>
               </div>
 
@@ -291,7 +301,7 @@ export default function KontakPage() {
               <div className="p-8 bg-gradient-to-br from-brand-50 to-white rounded-2xl border border-brand-100">
                 <h3 className="text-xl font-bold text-zinc-900 mb-6 flex items-center gap-2">
                   <MessageSquare className="w-6 h-6 text-brand-600" />
-                  Quick Contact Options
+                  {t("contact.quick.title", "Opsi Kontak Cepat")}
                 </h3>
                 <div className="space-y-4">
                   <a
@@ -307,8 +317,10 @@ export default function KontakPage() {
                         </svg>
                       </div>
                       <div>
-                        <p className="font-semibold text-zinc-900">WhatsApp</p>
-                        <p className="text-sm text-zinc-600">Chat with us directly</p>
+                        <p className="font-semibold text-zinc-900">{t("contact.quick.whatsapp", "WhatsApp")}</p>
+                        <p className="text-sm text-zinc-600">
+                          {t("contact.quick.whatsapp.desc", "Chat dengan kami secara langsung")}
+                        </p>
                       </div>
                     </div>
                     <svg className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -321,9 +333,9 @@ export default function KontakPage() {
                       <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
                         <Phone className="w-5 h-5" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-zinc-900">Call Us</p>
-                        <p className="text-sm text-zinc-600">Mon-Fri 8AM-5PM</p>
+                    <div>
+                        <p className="font-semibold text-zinc-900">{t("contact.quick.call", "Telepon")}</p>
+                        <p className="text-sm text-zinc-600">{t("contact.quick.call.desc", "Senin-Jumat 08.00-17.00")}</p>
                       </div>
                     </div>
                     <svg className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -336,9 +348,9 @@ export default function KontakPage() {
                       <div className="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center">
                         <Mail className="w-5 h-5" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-zinc-900">Email Us</p>
-                        <p className="text-sm text-zinc-600">We&rsquo;ll reply within 24h</p>
+                    <div>
+                        <p className="font-semibold text-zinc-900">{t("contact.quick.mail", "Email")}</p>
+                        <p className="text-sm text-zinc-600">{t("contact.quick.mail.desc", "Kami akan membalas dalam 24 jam")}</p>
                       </div>
                     </div>
                     <svg className="w-5 h-5 text-zinc-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -355,29 +367,29 @@ export default function KontakPage() {
       {/* FAQ Section */}
       <section className="py-16 bg-gradient-to-b from-white to-zinc-50">
         <div className="container">
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-zinc-900 mb-4">Frequently Asked Questions</h2>
-              <p className="text-zinc-600">Find answers to common questions about our products and services</p>
-            </div>
+            <div className="max-w-3xl mx-auto">
+              <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-zinc-900 mb-4">{t("contact.faq.title", "Pertanyaan yang Sering Diajukan")}</h2>
+              <p className="text-zinc-600">{t("contact.faq.desc", "Temukan jawaban atas pertanyaan umum tentang produk dan layanan kami")}</p>
+              </div>
 
             <div className="space-y-4">
               {[
                 {
-                  q: "What are your minimum order quantities?",
-                  a: "Our minimum order quantity varies by product grade. For export orders, we typically require a minimum of 100kg. Please contact our sales team for specific requirements.",
+                  q: "Berapa jumlah minimum pemesanan?",
+                  a: "Jumlah minimum bervariasi per grade produk. Untuk ekspor, kami umumnya mensyaratkan minimal 100kg. Hubungi tim sales untuk detail lebih lanjut.",
                 },
                 {
-                  q: "Do you ship internationally?",
-                  a: "Yes, we export to over 30 countries worldwide. We handle all necessary export documentation and can arrange shipping to most international destinations.",
+                  q: "Apakah bisa kirim internasional?",
+                  a: "Ya, kami mengekspor ke lebih dari 30 negara. Kami menangani dokumen ekspor dan dapat mengatur pengiriman ke berbagai destinasi.",
                 },
                 {
-                  q: "What certifications do you have?",
-                  a: "We are certified with HACCP, ISO 22000:2018, Halal MUI, and BPOM. All our products meet international food safety standards.",
+                  q: "Sertifikasi apa saja yang dimiliki?",
+                  a: "Kami tersertifikasi HACCP, ISO 22000:2018, Halal MUI, dan BPOM. Semua produk memenuhi standar keamanan pangan internasional.",
                 },
                 {
-                  q: "How can I become a distributor?",
-                  a: "We're always looking for partners worldwide. Please contact our business development team with your company profile and distribution capabilities.",
+                  q: "Bagaimana menjadi distributor?",
+                  a: "Kami selalu terbuka pada mitra global. Silakan hubungi tim pengembangan bisnis dengan profil perusahaan dan kemampuan distribusi Anda.",
                 },
               ].map((faq, index) => (
                 <motion.div

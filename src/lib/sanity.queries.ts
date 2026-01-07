@@ -101,24 +101,24 @@ export const qBeritaBySlug = groq`*[_type=="berita" && slug.current==$slug][0]{
 // Career
 export const qAllKarier = groq`*[_type=="karier"] | order(_createdAt desc){
   _id,
-  posisi,
+  "posisi": coalesce(posisi_i18n[$locale], posisi),
   slug,
   lokasi,
   tipe,
   department,
-  deskripsi,
-  kualifikasi,
+  "deskripsi": coalesce(deskripsi_i18n[$locale], deskripsi),
+  "kualifikasi": coalesce(kualifikasi_i18n[$locale], kualifikasi),
   emailTujuan
 }`;
 
 export const qKarierBySlug = groq`*[_type=="karier" && slug.current==$slug][0]{
-  posisi,
+  "posisi": coalesce(posisi_i18n[$locale], posisi),
   slug,
   lokasi,
   tipe,
   department,
-  deskripsi,
-  kualifikasi,
+  "deskripsi": coalesce(deskripsi_i18n[$locale], deskripsi),
+  "kualifikasi": coalesce(kualifikasi_i18n[$locale], kualifikasi),
   emailTujuan
 }`;
 

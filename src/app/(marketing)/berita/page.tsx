@@ -2,6 +2,7 @@
 import { fetchSanity } from "@/lib/sanity.client";
 import { qAllBerita } from "@/lib/sanity.queries";
 import { BeritaFilterGrid } from "@/components/berita-filter-grid";
+import { getServerLocale, tServer } from "@/lib/i18n-server";
 
 // Minimal type untuk items berita (samakan dengan field yang dikembalikan qAllBerita)
 type Slug = { current: string };
@@ -17,7 +18,9 @@ type Article = {
 };
 
 export default async function BeritaPage() {
-  const berita = await fetchSanity<Article[]>(qAllBerita);
+  const locale = await getServerLocale();
+  const t = (key: string, fallback?: string) => tServer(locale, key, fallback);
+  const berita = await fetchSanity<Article[]>(qAllBerita, {}, 60, locale);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-white to-zinc-50">
@@ -27,10 +30,13 @@ export default async function BeritaPage() {
         <div className="container relative">
           <div className="max-w-3xl mx-auto text-center text-white">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              News & Updates
+              {t("news.hero.title", "Berita & Pembaruan")}
             </h1>
             <p className="text-lg md:text-xl text-brand-100">
-              Stay informed with the latest developments, industry insights, and company announcements from TUNAS ESTA INDONESIA
+              {t(
+                "news.hero.subtitle",
+                "Ikuti perkembangan terbaru, insight industri, dan pengumuman perusahaan dari TUNAS ESTA INDONESIA.",
+              )}
             </p>
           </div>
         </div>
@@ -48,8 +54,10 @@ export default async function BeritaPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-zinc-700 mb-2">No news articles yet</h3>
-              <p className="text-zinc-500">Check back later for updates</p>
+              <h3 className="text-xl font-semibold text-zinc-700 mb-2">
+                {t("news.empty.title", "Belum ada artikel berita")}
+              </h3>
+              <p className="text-zinc-500">{t("news.empty.desc", "Silakan periksa kembali untuk pembaruan terbaru.")}</p>
             </div>
           )}
 
@@ -57,7 +65,7 @@ export default async function BeritaPage() {
           {berita?.length > 6 && (
             <div className="mt-12 text-center">
               <button className="inline-flex items-center gap-2 px-8 py-3 font-semibold text-brand-600 bg-white border-2 border-brand-600 rounded-full hover:bg-brand-50 transition-colors">
-                Load More Articles
+                {t("news.loadmore", "Muat artikel lain")}
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>

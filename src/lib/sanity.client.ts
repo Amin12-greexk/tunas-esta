@@ -10,10 +10,13 @@ export const sanityClient = createClient({
 export async function fetchSanity<T>(
   query: string,
   params: Record<string, unknown> = {},
-  revalidate = 60
+  revalidate = 60,
+  locale: "id" | "en" | "zh" = "id"
 ): Promise<T> {
-  return sanityClient.fetch<T>(query, params, {
-    cache: "force-cache",
-    next: { revalidate },
-  });
+  const options =
+    typeof window === "undefined"
+      ? { cache: "force-cache" as const, next: { revalidate } }
+      : { cache: "no-store" as const };
+
+  return sanityClient.fetch<T>(query, { ...params, locale: locale ?? "id", $locale: locale ?? "id" }, options);
 }

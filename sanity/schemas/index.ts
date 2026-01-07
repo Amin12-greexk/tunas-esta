@@ -13,6 +13,8 @@ import galeriFoto from "./galeriFoto";
 import navigation from "./navigation";
 import tentang from "./tentang";
 import navLink from "./object/navLink";
+import localizedString from "./object/localizedString";
+import localizedBlock from "./object/localizedBlock";
 
 export default [
   settings,
@@ -29,4 +31,6 @@ export default [
   navigation,
   tentang,
   navLink,
+  localizedString,
+  localizedBlock,
 ];

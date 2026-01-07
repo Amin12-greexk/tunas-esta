@@ -6,6 +6,7 @@ export default defineType({
   type: "document",
   fields: [
     defineField({ name: "posisi", type: "string", title: "Posisi", validation: (r) => r.required() }),
+    defineField({ name: "posisi_i18n", type: "localizedString", title: "Posisi (ID/EN/ZH)" }),
     defineField({ name: "slug", type: "slug", title: "Slug", options: { source: "posisi" }, validation: (r) => r.required() }),
     defineField({ name: "lokasi", type: "string", title: "Lokasi" }),
     defineField({ name: "tipe", type: "string", title: "Tipe", options: { list: ["Full-time", "Part-time", "Contract"] } }),
@@ -24,7 +25,9 @@ export default defineType({
       description: "Pilih departemen untuk filter karier.",
     }),
     defineField({ name: "deskripsi", type: "array", title: "Deskripsi", of: [{ type: "block" }] }),
+    defineField({ name: "deskripsi_i18n", type: "localizedBlock", title: "Deskripsi (ID/EN/ZH)" }),
     defineField({ name: "kualifikasi", type: "array", title: "Kualifikasi", of: [{ type: "string" }] }),
+    defineField({ name: "kualifikasi_i18n", type: "localizedBlock", title: "Kualifikasi (ID/EN/ZH)" }),
     defineField({ name: "emailTujuan", type: "string", title: "Email Tujuan" })
   ],
   preview: { select: { title: "posisi", subtitle: "lokasi" } }

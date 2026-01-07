@@ -7,6 +7,7 @@ import type { PortableTextBlock } from "@portabletext/types";
 import Link from "next/link";
 import { ChevronLeft, MapPin, Clock, Building } from "lucide-react";
 import { JobApplicationForm } from "@/components/job-application-form";
+import { getServerLocale, tServer } from "@/lib/i18n-server";
 
 type Slug = { current: string };
 
@@ -33,8 +34,9 @@ export default async function KarierDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-
-  const job = await fetchSanity<Job | null>(qKarierBySlug, { slug });
+  const locale = await getServerLocale();
+  const t = (key: string, fallback?: string) => tServer(locale, key, fallback);
+  const job = await fetchSanity<Job | null>(qKarierBySlug, { slug }, 60, locale);
 
   if (!job) {
     notFound();
@@ -55,9 +57,13 @@ export default async function KarierDetailPage({
         <div className="container relative">
           {/* Breadcrumb - Fixed contrast */}
           <nav className="flex items-center gap-2 text-sm text-white/90 mb-8">
-            <Link href="/" className="hover:text-white transition-colors underline-offset-4 hover:underline">Home</Link>
+            <Link href="/" className="hover:text-white transition-colors underline-offset-4 hover:underline">
+              {t("career.detail.breadcrumb.home", "Beranda")}
+            </Link>
             <ChevronLeft className="w-4 h-4 rotate-180" />
-            <Link href="/karier" className="hover:text-white transition-colors underline-offset-4 hover:underline">Careers</Link>
+            <Link href="/karier" className="hover:text-white transition-colors underline-offset-4 hover:underline">
+              {t("career.detail.breadcrumb.careers", "Karier")}
+            </Link>
             <ChevronLeft className="w-4 h-4 rotate-180" />
             <span className="text-white font-medium">{job.posisi}</span>
           </nav>
@@ -94,46 +100,53 @@ export default async function KarierDetailPage({
           <div className="grid gap-12 lg:grid-cols-3">
             {/* Main Content */}
             <div className="lg:col-span-2">
-              {/* Job Description */}
-              <div className="mb-12">
-                <h2 className="text-2xl font-bold text-zinc-900 mb-6">Job Description</h2>
-                {/* Improved contrast for description text */}
-                <div className="prose prose-lg max-w-none text-zinc-800 prose-headings:text-zinc-900 prose-strong:text-zinc-900">
-                  {job.deskripsi && <PortableText value={job.deskripsi} />}
-                </div>
+            {/* Job Description */}
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold text-zinc-900 mb-6">
+                {t("career.detail.desc.title", "Deskripsi Pekerjaan")}
+              </h2>
+              {/* Improved contrast for description text */}
+              <div className="prose prose-lg max-w-none text-zinc-800 prose-headings:text-zinc-900 prose-strong:text-zinc-900">
+                {job.deskripsi && <PortableText value={job.deskripsi} />}
               </div>
+            </div>
 
-              {/* Qualifications */}
-              <div className="mb-12">
-                <h2 className="text-2xl font-bold text-zinc-900 mb-6">
-                  Qualifications &amp; Requirements
-                </h2>
+            {/* Qualifications */}
+            <div className="mb-12">
+              <h2 className="text-2xl font-bold text-zinc-900 mb-6">
+                  {t("career.detail.qual.title", "Kualifikasi & Persyaratan")}
+              </h2>
                 {/* Improved contrast for qualifications text */}
                 <div className="prose prose-lg max-w-none text-zinc-800 prose-headings:text-zinc-900 prose-strong:text-zinc-900">
                   {job.kualifikasi && <PortableText value={job.kualifikasi} />}
                 </div>
               </div>
 
-              {/* Application Form - Improved background contrast */}
-              <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-8">
-                <h2 className="text-2xl font-bold text-zinc-900 mb-6">Apply for This Position</h2>
-                {isProductionRole ? (
-                  <div className="space-y-4">
-                    <p className="text-sm text-zinc-700">
-                      Formulir pelamar untuk posisi Produksi diarahkan ke Google Form resmi.
-                    </p>
-                    <a
-                      href={productionFormUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-6 py-3 text-white font-semibold shadow-lg transition hover:bg-brand-700"
-                    >
-                      Buka Form Produksi
-                    </a>
-                  </div>
-                ) : (
-                  <JobApplicationForm
-                    jobTitle={job.posisi}
+            {/* Application Form - Improved background contrast */}
+            <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-8">
+              <h2 className="text-2xl font-bold text-zinc-900 mb-6">
+                {t("career.detail.apply.title", "Lamar Posisi Ini")}
+              </h2>
+              {isProductionRole ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-zinc-700">
+                    {t(
+                      "career.detail.production.desc",
+                      "Formulir pelamar untuk posisi Produksi diarahkan ke Google Form resmi.",
+                    )}
+                  </p>
+                  <a
+                    href={productionFormUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-xl bg-brand-600 px-6 py-3 text-white font-semibold shadow-lg transition hover:bg-brand-700"
+                  >
+                    {t("career.detail.production.button", "Buka Form Produksi")}
+                  </a>
+                </div>
+              ) : (
+                <JobApplicationForm
+                  jobTitle={job.posisi}
                     emailTo={job.emailTujuan || "hr@tunasesta.co.id"}
                   />
                 )}
@@ -145,71 +158,103 @@ export default async function KarierDetailPage({
               <div className="sticky top-24 space-y-6">
                 {/* Job Summary Card - Improved contrast */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 border border-zinc-200">
-                  <h3 className="text-lg font-bold text-zinc-900 mb-4">Job Summary</h3>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-4">
+                    {t("career.detail.summary.title", "Ringkasan Pekerjaan")}
+                  </h3>
                   <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-zinc-600 mb-1 font-medium">Posted Date</p>
-                      <p className="font-medium text-zinc-900">30 days ago</p>
+                      <p className="text-sm text-zinc-600 mb-1 font-medium">
+                        {t("career.detail.summary.posted", "Tanggal Posting")}
+                      </p>
+                      <p className="font-medium text-zinc-900">
+                        {t("career.detail.summary.posted.value", "30 hari lalu")}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm text-zinc-600 mb-1 font-medium">Location</p>
+                      <p className="text-sm text-zinc-600 mb-1 font-medium">
+                        {t("career.detail.summary.location", "Lokasi")}
+                      </p>
                       <p className="font-medium text-zinc-900">{job.lokasi || "Jakarta, Indonesia"}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-zinc-600 mb-1 font-medium">Job Type</p>
+                      <p className="text-sm text-zinc-600 mb-1 font-medium">
+                        {t("career.detail.summary.type", "Jenis Pekerjaan")}
+                      </p>
                       <p className="font-medium text-zinc-900">{job.tipe || "Full-time"}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-zinc-600 mb-1 font-medium">Experience</p>
-                      <p className="font-medium text-zinc-900">2-5 years</p>
+                      <p className="text-sm text-zinc-600 mb-1 font-medium">
+                        {t("career.detail.summary.experience", "Pengalaman")}
+                      </p>
+                      <p className="font-medium text-zinc-900">
+                        {t("career.detail.summary.experience.value", "2-5 tahun")}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-sm text-zinc-600 mb-1 font-medium">Salary</p>
-                      <p className="font-medium text-zinc-900">Competitive</p>
+                      <p className="text-sm text-zinc-600 mb-1 font-medium">
+                        {t("career.detail.summary.salary", "Gaji")}
+                      </p>
+                      <p className="font-medium text-zinc-900">
+                        {t("career.detail.summary.salary.value", "Kompetitif")}
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Benefits Card - Improved contrast */}
                 <div className="bg-gradient-to-br from-brand-50 to-white rounded-2xl p-6 border border-brand-200">
-                  <h3 className="text-lg font-bold text-zinc-900 mb-4">What We Offer</h3>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-4">
+                    {t("career.detail.offer.title", "Apa yang Kami Tawarkan")}
+                  </h3>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-brand-600 rounded-full flex items-center justify-center mt-0.5">
-                        <div className="w-2 h-2 bg-white rounded-full" />
-                      </div>
-                      <span className="text-sm text-zinc-800 font-medium">Competitive salary package</span>
+                      <div className="w-2 h-2 bg-white rounded-full" />
+                    </div>
+                      <span className="text-sm text-zinc-800 font-medium">
+                        {t("career.detail.offer.item1", "Paket gaji kompetitif")}
+                      </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-brand-600 rounded-full flex items-center justify-center mt-0.5">
                         <div className="w-2 h-2 bg-white rounded-full" />
                       </div>
-                      <span className="text-sm text-zinc-800 font-medium">Health insurance for family</span>
+                      <span className="text-sm text-zinc-800 font-medium">
+                        {t("career.detail.offer.item2", "Asuransi kesehatan untuk keluarga")}
+                      </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-brand-600 rounded-full flex items-center justify-center mt-0.5">
                         <div className="w-2 h-2 bg-white rounded-full" />
                       </div>
-                      <span className="text-sm text-zinc-800 font-medium">Professional development</span>
+                      <span className="text-sm text-zinc-800 font-medium">
+                        {t("career.detail.offer.item3", "Pengembangan profesional")}
+                      </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-brand-600 rounded-full flex items-center justify-center mt-0.5">
                         <div className="w-2 h-2 bg-white rounded-full" />
                       </div>
-                      <span className="text-sm text-zinc-800 font-medium">Flexible working hours</span>
+                      <span className="text-sm text-zinc-800 font-medium">
+                        {t("career.detail.offer.item4", "Jam kerja fleksibel")}
+                      </span>
                     </li>
                     <li className="flex items-start gap-3">
                       <div className="w-5 h-5 bg-brand-600 rounded-full flex items-center justify-center mt-0.5">
                         <div className="w-2 h-2 bg-white rounded-full" />
                       </div>
-                      <span className="text-sm text-zinc-800 font-medium">Annual performance bonus</span>
+                      <span className="text-sm text-zinc-800 font-medium">
+                        {t("career.detail.offer.item5", "Bonus kinerja tahunan")}
+                      </span>
                     </li>
                   </ul>
                 </div>
 
                 {/* Share Job - Improved button contrast */}
                 <div className="bg-white rounded-2xl shadow-lg p-6 border border-zinc-200">
-                  <h3 className="text-lg font-bold text-zinc-900 mb-4">Share This Job</h3>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-4">
+                    {t("career.detail.share.title", "Bagikan Lowongan Ini")}
+                  </h3>
                   <div className="flex gap-3">
                     <button className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors text-sm font-semibold">
                       Facebook

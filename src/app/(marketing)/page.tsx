@@ -19,6 +19,7 @@ import { PortableText } from "@portabletext/react";
 import type { PortableTextBlock } from "@portabletext/types";
 import { ScrollAnimationWrapper } from "@/components/scroll-animation-wrapper";
 import { SectionSeparator } from "@/components/section-separator";
+import { getServerLocale } from "@/lib/i18n-server";
 
 type HeroData = {
   headline: string;
@@ -67,12 +68,13 @@ type Tentang = {
 };
 
 export default async function HomePage() {
+  const locale = await getServerLocale();
   const [hero, produk, berita, sertifikasi, tentang] = await Promise.all([
-    fetchSanity<HeroData | null>(qHero),
-    fetchSanity<Produk[]>(qAllProduk),
-    fetchSanity<Article[]>(qLatestBerita),
-    fetchSanity<Cert[]>(qAllSertifikasi),
-    fetchSanity<Tentang | null>(qPageBySlug, { slug: "tentang" }),
+    fetchSanity<HeroData | null>(qHero, {}, 60, locale),
+    fetchSanity<Produk[]>(qAllProduk, {}, 60, locale),
+    fetchSanity<Article[]>(qLatestBerita, {}, 60, locale),
+    fetchSanity<Cert[]>(qAllSertifikasi, {}, 60, locale),
+    fetchSanity<Tentang | null>(qPageBySlug, { slug: "tentang" }, 60, locale),
   ]);
 
   return (
@@ -208,4 +210,3 @@ export default async function HomePage() {
     </main>
   );
 }
-

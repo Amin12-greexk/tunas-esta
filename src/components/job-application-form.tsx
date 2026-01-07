@@ -7,12 +7,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Upload, X, CheckCircle, Send } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 const applicationSchema = z.object({
-  fullName: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  coverLetter: z.string().min(50, "Cover letter must be at least 50 characters"),
+  fullName: z.string().min(2, "Nama minimal 2 karakter"),
+  email: z.string().email("Alamat email tidak valid"),
+  phone: z.string().min(10, "Nomor telepon minimal 10 digit"),
+  coverLetter: z.string().min(50, "Surat lamaran minimal 50 karakter"),
   yearsOfExperience: z.string(),
   currentCompany: z.string().optional(),
   linkedinUrl: z.string().url().optional().or(z.literal("")),
@@ -30,6 +31,7 @@ export function JobApplicationForm({
   jobTitle: string;
   emailTo: string;
 }) {
+  const { t } = useI18n();
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -49,8 +51,8 @@ export function JobApplicationForm({
       if (file.size > 5 * 1024 * 1024) {
         // 5MB limit
         toast({
-          title: "File too large",
-          description: "Please upload a file smaller than 5MB",
+          title: t("job.form.fileTooLarge.title", "File terlalu besar"),
+          description: t("job.form.fileTooLarge.desc", "Unggah file di bawah 5MB"),
           variant: "destructive",
         });
         return;
@@ -62,8 +64,8 @@ export function JobApplicationForm({
   const onSubmit = async (data: ApplicationFormData) => {
     if (!resumeFile) {
       toast({
-        title: "Resume required",
-        description: "Please upload your resume",
+        title: t("job.form.cvRequired.title", "CV wajib diunggah"),
+        description: t("job.form.cvRequired.desc", "Silakan unggah CV Anda"),
         variant: "destructive",
       });
       return;
@@ -98,8 +100,8 @@ export function JobApplicationForm({
 
       setIsSubmitted(true);
       toast({
-        title: "Application submitted!",
-        description: "We'll review your application and get back to you soon.",
+        title: t("job.form.success.title", "Lamaran terkirim!"),
+        description: t("job.form.success.desc", "Kami akan meninjau dan menghubungi Anda segera."),
       });
 
       setTimeout(() => {
@@ -110,8 +112,8 @@ export function JobApplicationForm({
     } catch (error) {
       console.error("Submit application error:", error);
       toast({
-        title: "Error",
-        description: "Failed to submit application. Please try again.",
+        title: t("job.form.error.title", "Terjadi kesalahan"),
+        description: t("job.form.error.desc", "Gagal mengirim lamaran. Coba lagi."),
         variant: "destructive",
       });
     } finally {
@@ -124,28 +126,28 @@ export function JobApplicationForm({
       {/* Header / Context */}
       <div className="rounded-xl border border-zinc-200 bg-white p-4 sm:p-5">
         <p className="text-sm text-zinc-600">
-          Applying for: <span className="font-semibold text-zinc-900">{jobTitle}</span>
+          {t("job.form.applying", "Melamar untuk:")} <span className="font-semibold text-zinc-900">{jobTitle}</span>
         </p>
         <p className="mt-1 text-xs text-zinc-500">
-          Applications will be routed to: <span className="font-mono">{emailTo}</span>
+          {t("job.form.routed", "Lamaran akan dikirim ke:")} <span className="font-mono">{emailTo}</span>
         </p>
       </div>
 
       {/* Personal Information */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-zinc-900">Personal Information</h3>
+        <h3 className="text-lg font-semibold text-zinc-900">{t("job.form.personal", "Data Pribadi")}</h3>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label htmlFor="fullName" className="mb-2 block text-sm font-medium text-zinc-700">
-              Full Name *
+              {t("job.form.name", "Nama Lengkap *")}
             </label>
             <input
               {...register("fullName")}
               id="fullName"
               type="text"
               className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
-              placeholder="John Doe"
+              placeholder="Nama Anda"
             />
             {errors.fullName && (
               <p className="mt-1 text-sm text-red-600">{errors.fullName.message}</p>
@@ -154,14 +156,14 @@ export function JobApplicationForm({
 
           <div>
             <label htmlFor="email" className="mb-2 block text-sm font-medium text-zinc-700">
-              Email Address *
+              {t("job.form.email", "Alamat Email *")}
             </label>
             <input
               {...register("email")}
               id="email"
               type="email"
               className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
-              placeholder="john@example.com"
+              placeholder="email@contoh.com"
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
@@ -172,7 +174,7 @@ export function JobApplicationForm({
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label htmlFor="phone" className="mb-2 block text-sm font-medium text-zinc-700">
-              Phone Number *
+              {t("job.form.phone", "Nomor Telepon *")}
             </label>
             <input
               {...register("phone")}
@@ -188,14 +190,14 @@ export function JobApplicationForm({
 
           <div>
             <label htmlFor="currentCompany" className="mb-2 block text-sm font-medium text-zinc-700">
-              Current Company
+              {t("job.form.company", "Perusahaan Saat Ini")}
             </label>
             <input
               {...register("currentCompany")}
               id="currentCompany"
               type="text"
               className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
-              placeholder="PT Example Indonesia"
+              placeholder="PT Contoh Indonesia"
             />
           </div>
         </div>
@@ -203,24 +205,24 @@ export function JobApplicationForm({
 
       {/* Professional Information */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-zinc-900">Professional Information</h3>
+        <h3 className="text-lg font-semibold text-zinc-900">{t("job.form.professional", "Informasi Profesional")}</h3>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label htmlFor="yearsOfExperience" className="mb-2 block text-sm font-medium text-zinc-700">
-              Years of Experience *
+              {t("job.form.experience", "Pengalaman Kerja *")}
             </label>
             <select
               {...register("yearsOfExperience")}
               id="yearsOfExperience"
               className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
-              <option value="">Select experience</option>
-              <option value="0-1">0-1 years</option>
-              <option value="1-3">1-3 years</option>
-              <option value="3-5">3-5 years</option>
-              <option value="5-10">5-10 years</option>
-              <option value="10+">10+ years</option>
+              <option value="">Pilih pengalaman</option>
+              <option value="0-1">0-1 tahun</option>
+              <option value="1-3">1-3 tahun</option>
+              <option value="3-5">3-5 tahun</option>
+              <option value="5-10">5-10 tahun</option>
+              <option value="10+">10+ tahun</option>
             </select>
             {errors.yearsOfExperience && (
               <p className="mt-1 text-sm text-red-600">{errors.yearsOfExperience.message}</p>
@@ -229,19 +231,19 @@ export function JobApplicationForm({
 
           <div>
             <label htmlFor="availability" className="mb-2 block text-sm font-medium text-zinc-700">
-              Availability *
+              {t("job.form.availability", "Ketersediaan *")}
             </label>
             <select
               {...register("availability")}
               id="availability"
               className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
-              <option value="">Select availability</option>
-              <option value="immediately">Immediately</option>
-              <option value="2weeks">2 weeks notice</option>
-              <option value="1month">1 month notice</option>
-              <option value="2months">2 months notice</option>
-              <option value="other">Other</option>
+              <option value="">Pilih ketersediaan</option>
+              <option value="immediately">Siap segera</option>
+              <option value="2weeks">Notice 2 minggu</option>
+              <option value="1month">Notice 1 bulan</option>
+              <option value="2months">Notice 2 bulan</option>
+              <option value="other">Lainnya</option>
             </select>
             {errors.availability && (
               <p className="mt-1 text-sm text-red-600">{errors.availability.message}</p>
@@ -252,14 +254,14 @@ export function JobApplicationForm({
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <label htmlFor="linkedinUrl" className="mb-2 block text-sm font-medium text-zinc-700">
-              LinkedIn Profile
+              {t("job.form.linkedin", "Profil LinkedIn")}
             </label>
             <input
               {...register("linkedinUrl")}
               id="linkedinUrl"
               type="url"
               className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
-              placeholder="https://linkedin.com/in/johndoe"
+              placeholder="https://linkedin.com/in/nama"
             />
             {errors.linkedinUrl && (
               <p className="mt-1 text-sm text-red-600">{errors.linkedinUrl.message}</p>
@@ -268,14 +270,14 @@ export function JobApplicationForm({
 
           <div>
             <label htmlFor="portfolioUrl" className="mb-2 block text-sm font-medium text-zinc-700">
-              Portfolio/Website
+              {t("job.form.portfolio", "Portofolio/Situs")}
             </label>
             <input
               {...register("portfolioUrl")}
               id="portfolioUrl"
               type="url"
               className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
-              placeholder="https://johndoe.com"
+              placeholder="https://contoh.com"
             />
             {errors.portfolioUrl && (
               <p className="mt-1 text-sm text-red-600">{errors.portfolioUrl.message}</p>
@@ -285,14 +287,14 @@ export function JobApplicationForm({
 
         <div>
           <label htmlFor="expectedSalary" className="mb-2 block text-sm font-medium text-zinc-700">
-            Expected Salary (IDR)
+            {t("job.form.salary", "Ekspektasi Gaji (IDR)")}
           </label>
           <input
             {...register("expectedSalary")}
             id="expectedSalary"
             type="text"
             className="w-full rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
-            placeholder="e.g., 10-15 million/month"
+            placeholder="cth: 10-15 juta/bulan"
           />
         </div>
       </div>
@@ -300,14 +302,14 @@ export function JobApplicationForm({
       {/* Cover Letter */}
       <div>
         <label htmlFor="coverLetter" className="mb-2 block text-sm font-medium text-zinc-700">
-          Cover Letter *
+          {t("job.form.cover", "Surat Lamaran *")}
         </label>
         <textarea
           {...register("coverLetter")}
           id="coverLetter"
           rows={6}
           className="w-full resize-none rounded-xl border border-zinc-200 px-4 py-3 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand-500"
-          placeholder="Tell us why you're interested in this position and what makes you a great fit..."
+          placeholder="Jelaskan minat Anda pada posisi ini dan alasan Anda cocok..."
         />
         {errors.coverLetter && (
           <p className="mt-1 text-sm text-red-600">{errors.coverLetter.message}</p>
@@ -317,7 +319,7 @@ export function JobApplicationForm({
       {/* Resume Upload */}
       <div>
         <label className="mb-2 block text-sm font-medium text-zinc-700">
-          Resume/CV * (PDF, DOC, DOCX - Max 5MB)
+          {t("job.form.upload.label", "Resume/CV * (PDF, DOC, DOCX - maks 5MB)")}
         </label>
         <div className="relative">
           <input
@@ -333,7 +335,7 @@ export function JobApplicationForm({
           >
             <Upload className="h-6 w-6 text-zinc-400" />
             <span className="text-zinc-600">
-              {resumeFile ? resumeFile.name : "Click to upload or drag and drop"}
+              {resumeFile ? resumeFile.name : t("job.form.upload.placeholder", "Klik untuk unggah atau seret & jatuhkan")}
             </span>
           </label>
           {resumeFile && (
@@ -362,17 +364,17 @@ export function JobApplicationForm({
         {isSubmitted ? (
           <>
             <CheckCircle className="h-5 w-5" />
-            Application Submitted!
+            {t("job.form.submitted", "Lamaran Terkirim!")}
           </>
         ) : isSubmitting ? (
           <>
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            Submitting...
+            {t("job.form.submitting", "Mengirim...")}
           </>
         ) : (
           <>
             <Send className="h-5 w-5" />
-            Submit Application
+            {t("job.form.submit", "Kirim Lamaran")}
           </>
         )}
       </button>

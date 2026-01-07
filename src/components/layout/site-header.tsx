@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -13,6 +14,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Menu, Phone, ChevronDown, X } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 export type NavItem = {
   title: string;
@@ -28,11 +30,13 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [hoverTimeout, setHoverTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [expandedMobileItem, setExpandedMobileItem] = useState<string | null>(null);
+  const { locale: language, setLocale: setLanguage, t } = useI18n();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -45,6 +49,15 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
       if (hoverTimeout) clearTimeout(hoverTimeout);
     };
   }, [hoverTimeout]);
+
+  const handleLanguageChange = (lang: "id" | "en" | "zh") => {
+    setLanguage(lang);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("lang", lang);
+      document.cookie = `lang=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+      router.refresh();
+    }
+  };
 
   const NAV: NavItem[] = useMemo(
     () =>
@@ -250,13 +263,38 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
         </div>
 
         {/* Desktop CTA */}
-        <Link
-          href="/kontak"
-          className="hidden lg:inline-flex px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold text-sm transition-all duration-500 hover:shadow-xl hover:shadow-green-500/30 whitespace-nowrap relative overflow-hidden group"
-        >
-          <span className="relative z-10">Contact</span>
-          <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-        </Link>
+        <div className="hidden lg:flex items-center gap-3">
+          <div className="relative">
+            <div className="flex items-center rounded-xl border border-gray-200/70 bg-white/70 backdrop-blur px-3 py-2 shadow-sm gap-1.5">
+              {["id", "en", "zh"].map(code => {
+                const label = code === "id" ? t("lang.id", "ID") : code === "en" ? t("lang.en", "EN") : t("lang.zh", "ZH");
+                const active = language === code;
+                return (
+                  <button
+                    key={code}
+                    onClick={() => handleLanguageChange(code as "id" | "en" | "zh")}
+                    className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      active
+                        ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow"
+                        : "text-gray-700 hover:bg-green-50"
+                    }`}
+                    aria-pressed={active}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <Link
+            href="/kontak"
+            className="inline-flex px-6 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold text-sm transition-all duration-500 hover:shadow-xl hover:shadow-green-500/30 whitespace-nowrap relative overflow-hidden group"
+          >
+            <span className="relative z-10">{t("header.contact", "Kontak")}</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+          </Link>
+        </div>
 
         {/* Mobile */}
         <div className="lg:hidden ml-auto">
@@ -322,6 +360,28 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
               {/* Items */}
               <div className="flex-1 overflow-y-auto">
                 <nav className="p-4 space-y-1.5">
+                  {/* Language Toggle Mobile */}
+                  <div className="flex items-center gap-2 mb-4">
+                    {["id", "en", "zh"].map(code => {
+                      const label = code === "id" ? t("lang.id", "ID") : code === "en" ? t("lang.en", "EN") : t("lang.zh", "ZH");
+                      const active = language === code;
+                      return (
+                        <button
+                          key={code}
+                          onClick={() => handleLanguageChange(code as "id" | "en" | "zh")}
+                          className={`flex-1 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                            active
+                              ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow"
+                              : "bg-white border border-gray-200 text-gray-700"
+                          }`}
+                          aria-pressed={active}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
                   {NAV.map(item => {
                     const submenuItems = (item.submenu ?? []).flatMap(sub =>
                       sub.title && sub.href
@@ -419,7 +479,7 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
                     className="flex items-center justify-center w-full px-5 py-4 rounded-xl bg-gradient-to-r from-green-600 via-emerald-600 to-green-700 hover:from-green-700 hover:via-emerald-700 hover:to-green-800 text-white font-semibold transition-all duration-500 shadow-lg hover:shadow-xl hover:shadow-green-500/40 gap-2.5 relative overflow-hidden group"
                   >
                     <Phone className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-300" />
-                    <span className="relative z-10">Contact</span>
+                    <span className="relative z-10">{t("header.contact", "Kontak")}</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                   </Link>
                 </div>
@@ -438,3 +498,4 @@ export function SiteHeader({ logoUrl, siteTitle, navItems = [] }: SiteHeaderProp
     </header>
   );
 }
+
